@@ -258,12 +258,22 @@ spec:
         {{- end}}
         {{- end}}
         {{- if .Values.tls.proxy.enabled }}
+        {{- if .Values.certs.existing_issuer.enabled }}
+        - name: ca
+          secret:
+            secretName: "{{ .Values.certs.existing_issuer.secretName }}"
+            items:
+            - key: ca.crt
+              path: ca.crt
+        {{- end }}
+        {{- if .Values.certs.internal_issuer.enabled }}
         - name: ca
           secret:
             secretName: "{{ .Release.Name }}-{{ .Values.tls.ca_suffix }}"
             items:
-              - key: ca.crt
-                path: ca.crt
+            - key: ca.crt
+              path: ca.crt
+        {{- end }}
         - name: proxy-certs
           secret:
             secretName: "{{ .Release.Name }}-{{ .Values.tls.proxy.cert_name }}"

@@ -265,6 +265,11 @@ auth:
 ## Cert manager is used for automatically provisioning TLS certificates
 ## for components within a Pulsar cluster
 certs:
+  existing_issuer:
+    apiVersion: cert-manager.io/v1
+    enabled: false
+    name: ca
+    secretName: svc-cluster-local
   internal_issuer:
     apiVersion: cert-manager.io/v1alpha2
     enabled: false

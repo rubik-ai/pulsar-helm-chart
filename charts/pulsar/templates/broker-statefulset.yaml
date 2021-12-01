@@ -238,6 +238,15 @@ spec:
           {{- if .Values.broker.extraVolumeMounts }}
 {{ toYaml .Values.broker.extraVolumeMounts | indent 10 }}
           {{- end }}
+          {{- if .Values.storageOffload }}
+          {{- if .Values.storageOffload.driver }}
+          {{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+          - name: gcp-service-account
+            readOnly: true
+            mountPath: /pulsar/gcp-service-account
+          {{- end }}
+          {{- end }}
+          {{- end }}
           {{- include "pulsar.broker.certs.volumeMounts" . | nindent 10 }}
       {{- if and .Values.rbac.enabled .Values.rbac.psp }}
         securityContext:
@@ -246,6 +255,15 @@ spec:
       volumes:
       {{- if .Values.broker.extraVolumes }}
 {{ toYaml .Values.broker.extraVolumes | indent 6 }}
+      {{- end }}
+      {{- if .Values.storageOffload }}
+      {{- if .Values.storageOffload.driver }}
+      {{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+      - name: gcp-service-account
+        secret:
+          secretName: {{ .Values.storageOffload.gcsServiceAccountSecret }}
+      {{- end }}
+      {{- end }}
       {{- end }}
       {{- if .Values.auth.authentication.enabled }}
       {{- if eq .Values.auth.authentication.provider "jwt" }}

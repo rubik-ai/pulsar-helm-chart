@@ -142,5 +142,92 @@ data:
   # https://github.com/apache/bookkeeper/pull/2300
   bookkeeperUseV2WireProtocol: "false"
   {{- end }}
+  
+  # Offload Settings
+{{- if .Values.storageOffload }}
+{{- if .Values.storageOffload.driver }}
+{{- if eq .Values.storageOffload.driver "aws-s3" }}
+  managedLedgerOffloadDriver: "{{ .Values.storageOffload.driver }}"
+  s3ManagedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
+  s3ManagedLedgerOffloadRegion: "{{ .Values.storageOffload.region }}"
+  {{- if .Values.extra.tardigrade}}
+  s3ManagedLedgerOffloadServiceEndpoint: "http://{{ .Release.Name }}-tardigrade-gateway-svc:{{ .Values.tardigrade.service.port }}"
+  AWS_ACCESS_KEY_ID: "{{ .Values.tardigrade.accessKey }}"
+  AWS_SECRET_ACCESS_KEY: "{{ .Values.tardigrade.secretKey }}"
+  {{- else }}
+  AWS_ACCESS_KEY_ID: "{{ .Values.storageOffload.accessKey }}"
+  AWS_SECRET_ACCESS_KEY: "{{ .Values.storageOffload.accessSecret }}" # pragma: allowlist secret
+  {{- if .Values.storageOffload.serviceEndpoint}}
+  s3ManagedLedgerOffloadServiceEndpoint: "{{ .Values.storageOffload.serviceEndpoint }}"
+  {{- end }}
+  {{- end }}
+  {{- if .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadAutoTriggerSizeThresholdBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadThresholdInBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadDeletionLagMs: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadDeletionLagInMillis: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  {{- end }}
+  {{- if .Values.storageOffload.maxBlockSizeInBytes }}
+  s3ManagedLedgerOffloadMaxBlockSizeInBytes: "{{ .Values.storageOffload.maxBlockSizeInBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.readBufferSizeInBytes }}
+  s3ManagedLedgerOffloadReadBufferSizeInBytes: "{{ .Values.storageOffload.readBufferSizeInBytes }}"
+  {{- end }}
+{{- end }}
+{{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+  managedLedgerOffloadDriver: "{{ .Values.storageOffload.driver }}"
+  gcsManagedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
+  gcsManagedLedgerOffloadRegion: "{{ .Values.storageOffload.region }}"
+  gcsManagedLedgerOffloadServiceAccountKeyFile: "/pulsar/gcp-service-account/{{ .Values.storageOffload.gcsServiceAccountJsonFile }}"
+  {{- if .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadAutoTriggerSizeThresholdBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadThresholdInBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadDeletionLagMs: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadDeletionLagInMillis: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  {{- end }}
+  {{- if .Values.storageOffload.maxBlockSizeInBytes }}
+  gcsManagedLedgerOffloadMaxBlockSizeInBytes: "{{ .Values.storageOffload.maxBlockSizeInBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.readBufferSizeInBytes }}
+  gcsManagedLedgerOffloadReadBufferSizeInBytes: "{{ .Values.storageOffload.readBufferSizeInBytes }}"
+  {{- end }}
+{{- end }}
+{{- if eq .Values.storageOffload.driver "azureblob" }}
+  managedLedgerOffloadDriver: "{{ .Values.storageOffload.driver }}"
+  managedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
+  # workaround to inject it in the broker.conf (problem: gets injected also in client.conf)
+  PULSAR_PREFIX_managedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
+  AZURE_STORAGE_ACCOUNT: "{{ .Values.storageOffload.storageAccount }}"
+  AZURE_STORAGE_ACCESS_KEY: "{{ .Values.storageOffload.storageAccountKey }}"
+  {{- if .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadAutoTriggerSizeThresholdBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadThresholdInBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadDeletionLagMs: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadDeletionLagInMillis: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  {{- end }}
+  {{- if .Values.storageOffload.maxBlockSizeInBytes }}
+  managedLedgerOffloadMaxBlockSizeInBytes: "{{ .Values.storageOffload.maxBlockSizeInBytes }}"
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
 {{ toYaml .Values.broker.configData | indent 2 }}
 {{- end }}

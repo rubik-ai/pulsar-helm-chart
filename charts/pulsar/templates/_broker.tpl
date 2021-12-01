@@ -60,12 +60,22 @@ Define broker tls certs volumes
       path: tls.crt
     - key: tls.key
       path: tls.key
+{{- if .Values.certs.existing_issuer.enabled }}
+- name: ca
+  secret:
+    secretName: "{{ .Values.certs.existing_issuer.secretName }}"
+    items:
+    - key: ca.crt
+      path: ca.crt
+{{- end }}
+{{- if .Values.certs.internal_issuer.enabled }}
 - name: ca
   secret:
     secretName: "{{ .Release.Name }}-{{ .Values.tls.ca_suffix }}"
     items:
     - key: ca.crt
       path: ca.crt
+{{- end }}
 {{- if .Values.tls.zookeeper.enabled }}
 - name: keytool
   configMap:
