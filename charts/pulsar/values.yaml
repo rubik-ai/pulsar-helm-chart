@@ -121,6 +121,8 @@ components:
   toolset: true
   # pulsar manager
   pulsar_manager: true
+  # pulsar heartbeat
+  pulsar_heartbeat: false
 
 ## Monitoring Components
 ##
@@ -192,6 +194,10 @@ images:
     tag: v0.1.0
     pullPolicy: IfNotPresent
     hasCommand: false
+  pulsar_heartbeat:
+    repository: datastax/pulsar-heartbeat
+    pullPolicy: IfNotPresent
+    tag: 1.0.6
 
 ## TLS
 ## templates/tls-certs.yaml
@@ -849,6 +855,33 @@ proxy:
   pdb:
     usePolicy: true
     maxUnavailable: 1
+
+
+pulsar_heartbeat:
+  component: pulsarheartbeat
+  port: "8089"
+  serviceType: ClusterIP
+  resources:
+    requests:
+      memory: 64Mi
+      cpu: 0.1
+    limits:
+      memory: 128Mi
+      cpu: 0.25
+  prometheus:
+    enabled: true
+  config:
+    k8sInClusterMonitorEnabled: "false"
+    alertUrl:
+    opsGenieHeartbeatUrl:
+    opsGenieHeartbeatKey:
+    opsGenieAlertKey:
+    broker:
+      intervalSeconds: 45
+    adminRest:
+      intervalSeconds: 120
+    latencyTest:
+      intervalSeconds: 60
 
 ## Pulsar Extra: Dashboard
 ## templates/dashboard-deployment.yaml
