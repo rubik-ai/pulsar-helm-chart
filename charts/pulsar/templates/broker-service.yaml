@@ -43,6 +43,10 @@ spec:
   - name: "{{ .Values.tlsPrefix }}pulsarssl"
     port: {{ .Values.broker.ports.pulsarssl }}
   {{- end }}
+  {{- if .Values.kop }}
+  - name: kafka
+    port: {{ .Values.kop.listenerPort }}
+  {{- end }}
   clusterIP: None
   selector:
     app: {{ template "pulsar.name" . }}

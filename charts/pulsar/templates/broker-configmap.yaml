@@ -229,5 +229,25 @@ data:
 {{- end }}
 {{- end }}
 {{- end }}
+{{- if .Values.kop }}
+  messagingProtocols: kafka
+  protocolHandlerDirectory: ./protocols
+  allowAutoTopicCreationType: "{{ .Values.kop.allowAutoTopicCreationType }}"
+  kafkaProtocolMap: "{{ .Values.kop.kafkaProtocolMap }}"
+  kafkaTenant: "{{.Values.kop.kafkaTenant }}"
+  kafkaNamespace: "{{.Values.kop.kafkaNamespace }}"
+  kafkaEnableMultiTenantMetadata: "{{.Values.kop.kafkaEnableMultiTenantMetadata }}"
+  kafkaMetadataTenant: "{{.Values.kop.kafkaMetadataTenant }}"
+  kafkaMetadataNamespace: {{.Values.kop.kafkaMetadataNamespace }}
+  PULSAR_PREFIX_messagingProtocols: kafka
+  PULSAR_PREFIX_protocolHandlerDirectory: ./protocols
+  PULSAR_PREFIX_allowAutoTopicCreationType: "{{ .Values.kop.allowAutoTopicCreationType }}"
+  PULSAR_PREFIX_kafkaProtocolMap: "{{ .Values.kop.kafkaProtocolMap }}"
+  PULSAR_PREFIX_kafkaTenant: "{{.Values.kop.kafkaTenant }}"
+  PULSAR_PREFIX_kafkaNamespace: "{{.Values.kop.kafkaNamespace }}"
+  PULSAR_PREFIX_kafkaEnableMultiTenantMetadata: "{{.Values.kop.kafkaEnableMultiTenantMetadata }}"
+  PULSAR_PREFIX_kafkaMetadataTenant: "{{.Values.kop.kafkaMetadataTenant }}"
+  PULSAR_PREFIX_kafkaMetadataNamespace: "{{.Values.kop.kafkaMetadataNamespace }}"
+{{- end }}
 {{ toYaml .Values.broker.configData | indent 2 }}
 {{- end }}

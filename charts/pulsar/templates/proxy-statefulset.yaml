@@ -192,6 +192,10 @@ spec:
         - name: "{{ .Values.tlsPrefix }}pulsarssl"
           containerPort: {{ .Values.proxy.ports.pulsarssl }}
         {{- end }}
+        {{- if .Values.kop }}
+        - name: kafka
+          containerPort: {{ .Values.kop.listenerPort }}
+        {{- end }}
       {{- if and .Values.rbac.enabled .Values.rbac.psp }}
         securityContext:
           readOnlyRootFilesystem: false

@@ -82,5 +82,10 @@ Define broker tls certs volumes
     name: "{{ template "pulsar.fullname" . }}-keytool-configmap"
     defaultMode: 0755
 {{- end }}
+{{- if .Values.kop.tls }}
+- name: kop-certs
+  secret:
+    secretName: "{{ .Values.kop.tls.secretName }}"
+{{- end }}
 {{- end }}
 {{- end }}

@@ -49,6 +49,11 @@ spec:
       port: {{ .Values.proxy.ports.pulsarssl }}
       protocol: TCP
     {{- end }}
+    {{- if .Values.kop }}
+    - name: kafka
+      port: {{ .Values.kop.listenerPort }}
+      protocol: TCP
+    {{- end }}
   selector:
     app: {{ template "pulsar.name" . }}
     release: {{ .Release.Name }}

@@ -1125,3 +1125,17 @@ pulsar_manager:
   admin:
     user: pulsar
     password: pulsar
+
+## Enable Storage Offloader
+# storageOffload:
+#   maxBlockSizeInBytes: "64000000"
+#   readBufferSizeInBytes: "1000000"
+#   managedLedgerOffloadDeletionLagMs: "14400000"
+#   managedLedgerOffloadAutoTriggerSizeThresholdBytes: "1073741824" # 1GB
+
+## Enable Kafka On Pulsar
+# kop:
+#   allowAutoTopicCreationType: partitioned
+#   kafkaListeners: kafka_internal://0.0.0.0:9092
+#   kafkaProtocolMap: kafka_internal:PLAINTEXT
+#   kafkaAdvertisedListeners: kafka_internal://localhost:9092

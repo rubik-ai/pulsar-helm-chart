@@ -221,6 +221,25 @@ spec:
         - name: "{{ .Values.tlsPrefix }}pulsarssl"
           containerPort: {{ .Values.broker.ports.pulsarssl }}
         {{- end }}
+        {{- if .Values.kop }}
+        - name: kafka
+          containerPort: {{ .Values.kop.listenerPort }}
+        {{- end }}
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        {{- if .Values.kop }}
+        - name: PULSAR_PREFIX_kafkaAdvertisedListeners
+          value: PLAINTEXT://$(POD_NAME).{{ template "pulsar.broker.service" . }}.{{ template "pulsar.namespace" . }}.svc.{{ .Values.clusterDomain }}:{{ .Values.kop.listenerPort }}
+        - name: PULSAR_PREFIX_kafkaListeners
+          value: PLAINTEXT://$(POD_NAME).{{ template "pulsar.broker.service" . }}.{{ template "pulsar.namespace" . }}.svc.{{ .Values.clusterDomain }}:{{ .Values.kop.listenerPort }}
+        - name: kafkaAdvertisedListeners
+          value: PLAINTEXT://$(POD_NAME).{{ template "pulsar.broker.service" . }}.{{ template "pulsar.namespace" . }}.svc.{{ .Values.clusterDomain }}:{{ .Values.kop.listenerPort }}
+        - name: kafkaListeners
+          value: PLAINTEXT://$(POD_NAME).{{ template "pulsar.broker.service" . }}.{{ template "pulsar.namespace" . }}.svc.{{ .Values.clusterDomain }}:{{ .Values.kop.listenerPort }}
+        {{- end }}
         envFrom:
         - configMapRef:
             name: "{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}"

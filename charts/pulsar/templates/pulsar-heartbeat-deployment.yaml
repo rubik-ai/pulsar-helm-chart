@@ -27,10 +27,7 @@ spec:
       annotations:
 {{ toYaml .Values.pulsar_heartbeat.annotations | indent 8 }}
     spec:
-    {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-    {{- end }}
+      {{- include "pulsar.imagePullSecrets" . | nindent 6}}
       serviceAccountName: "{{ template "pulsar.fullname" . }}-{{ .Values.pulsar_heartbeat.component }}"
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
