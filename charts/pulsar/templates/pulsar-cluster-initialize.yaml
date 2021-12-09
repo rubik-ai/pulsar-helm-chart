@@ -106,5 +106,6 @@ spec:
       volumes:
       {{- include "pulsar.toolset.certs.volumes" . | nindent 6 }}
       restartPolicy: Never
+      {{- include "pulsar.imagePullSecrets" . | nindent 6}}
 {{- end }}
 {{- end }}
