@@ -253,6 +253,11 @@ spec:
             name: broker-token
             readOnly: true
           {{- end }}
+          {{- if eq .Values.auth.authentication.provider "heimdall" }}
+          - mountPath: "/pulsar/tokens"
+            name: broker-token
+            readOnly: true
+          {{- end }}
           {{- end }}
           {{- if .Values.broker.extraVolumeMounts }}
 {{ toYaml .Values.broker.extraVolumeMounts | indent 10 }}
@@ -307,6 +312,14 @@ spec:
           secretName: "{{ .Release.Name }}-token-{{ .Values.auth.superUsers.broker }}"
           items:
             - key: TOKEN
+              path: broker/token
+      {{- end}}
+      {{- if eq .Values.auth.authentication.provider "heimdall" }}
+      - name: broker-token
+        secret:
+          secretName: "{{ .Release.Name }}-token-{{ .Values.auth.superUsers.broker }}"
+          items:
+            - key: APIKEY
               path: broker/token
       {{- end}}
       {{- end}}

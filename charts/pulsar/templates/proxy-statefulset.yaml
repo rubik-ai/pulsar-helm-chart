@@ -214,6 +214,11 @@ spec:
             name: proxy-token
             readOnly: true
           {{- end }}
+          {{- if eq .Values.auth.authentication.provider "heimdall" }}
+          - mountPath: "/pulsar/tokens"
+            name: proxy-token
+            readOnly: true
+          {{- end }}
           {{- end }}
           {{- if .Values.tls.proxy.enabled }}
           - mountPath: "/pulsar/certs/proxy"
@@ -258,6 +263,14 @@ spec:
             secretName: "{{ .Release.Name }}-token-{{ .Values.auth.superUsers.proxy }}"
             items:
               - key: TOKEN
+                path: proxy/token
+        {{- end}}
+        {{- if eq .Values.auth.authentication.provider "heimdall" }}
+        - name: proxy-token
+          secret:
+            secretName: "{{ .Release.Name }}-token-{{ .Values.auth.superUsers.proxy }}"
+            items:
+              - key: APIKEY
                 path: proxy/token
         {{- end}}
         {{- end}}
