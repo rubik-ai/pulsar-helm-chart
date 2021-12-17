@@ -40,6 +40,16 @@ spec:
           secret:
             secretName: {{ .Values.pulsar_heartbeat.tlsSecretName }}
         {{- end }}
+        {{- if .Values.auth.authentication.enabled }}
+        {{- if eq .Values.auth.authentication.provider "heimdall" }}
+        - name: client-token
+          secret:
+            secretName: "{{ .Release.Name }}-token-{{ .Values.auth.superUsers.client }}"
+            items:
+              - key: APIKEY
+                path: client/token
+        {{- end}}
+        {{- end}}
       initContainers:
       {{- if .Values.pulsar_heartbeat.enableWaitContainers | default true }}
       # This init container will wait for bookkeeper to be ready before
@@ -79,6 +89,13 @@ spec:
           {{- if and .Values.tls.enabled }}
           - name: tls
             mountPath: /etc/certs
+          {{- end }}
+          {{- if .Values.auth.authentication.enabled }}
+          {{- if eq .Values.auth.authentication.provider "heimdall" }}
+          - mountPath: "/etc/tokens"
+            name: client-token
+            readOnly: true
+          {{- end }}
           {{- end }}
           env:
           - name: DeployEnv
