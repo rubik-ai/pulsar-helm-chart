@@ -326,16 +326,19 @@ zookeeper:
       failureThreshold: 10
       initialDelaySeconds: 10
       periodSeconds: 30
+      timeoutSeconds: 5
     readiness:
       enabled: true
       failureThreshold: 10
       initialDelaySeconds: 10
       periodSeconds: 30
+      timeoutSeconds: 5
     startup:
       enabled: false
       failureThreshold: 30
       initialDelaySeconds: 10
       periodSeconds: 30
+      timeoutSeconds: 5
   affinity:
     anti_affinity: true
     # Set the anti affinity type. Valid values:
@@ -450,16 +453,19 @@ bookkeeper:
       failureThreshold: 60
       initialDelaySeconds: 10
       periodSeconds: 30
+      timeoutSeconds: 5
     readiness:
       enabled: true
       failureThreshold: 60
       initialDelaySeconds: 10
       periodSeconds: 30
+      timeoutSeconds: 5
     startup:
       enabled: false
       failureThreshold: 30
       initialDelaySeconds: 60
       periodSeconds: 30
+      timeoutSeconds: 5
   affinity:
     anti_affinity: true
     # Set the anti affinity type. Valid values:
@@ -656,16 +662,19 @@ broker:
       failureThreshold: 10
       initialDelaySeconds: 30
       periodSeconds: 10
+      timeoutSeconds: 5
     readiness:
       enabled: true
       failureThreshold: 10
       initialDelaySeconds: 30
       periodSeconds: 10
+      timeoutSeconds: 5
     startup:
       enabled: false
       failureThreshold: 30
       initialDelaySeconds: 60
       periodSeconds: 10
+      timeoutSeconds: 5
   affinity:
     anti_affinity: true
     # Set the anti affinity type. Valid values:
@@ -762,16 +771,19 @@ proxy:
       failureThreshold: 10
       initialDelaySeconds: 30
       periodSeconds: 10
+      timeoutSeconds: 5
     readiness:
       enabled: true
       failureThreshold: 10
       initialDelaySeconds: 30
       periodSeconds: 10
+      timeoutSeconds: 5
     startup:
       enabled: false
       failureThreshold: 30
       initialDelaySeconds: 60
       periodSeconds: 10
+      timeoutSeconds: 5
   affinity:
     anti_affinity: true
     # Set the anti affinity type. Valid values:
