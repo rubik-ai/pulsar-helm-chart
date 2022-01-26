@@ -216,6 +216,10 @@ data:
 {{- if eq .Values.storageOffload.driver "azureblob" }}
   managedLedgerOffloadDriver: "{{ .Values.storageOffload.driver }}"
   managedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
+  {{- if .Values.storageOffload.serviceEndpoint}}
+  serviceEndpoint: "{{ .Values.storageOffload.serviceEndpoint }}"
+  PULSAR_PREFIX_serviceEndpoint: "{{ .Values.storageOffload.serviceEndpoint }}"
+  {{- end }}
   # workaround to inject it in the broker.conf (problem: gets injected also in client.conf)
   PULSAR_PREFIX_managedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
   AZURE_STORAGE_ACCOUNT: "{{ .Values.storageOffload.storageAccount }}"

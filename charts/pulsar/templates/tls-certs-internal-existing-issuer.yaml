@@ -26,6 +26,8 @@ kind: Certificate
 metadata:
   name: "{{ template "pulsar.fullname" . }}-{{ .Values.tls.proxy.cert_name }}"
   namespace: {{ template "pulsar.namespace" . }}
+  annotations:
+{{ toYaml .Values.certs.existing_issuer.annotations | indent 4 }}
 spec:
   # Secret names are always required.
   secretName: "{{ .Release.Name }}-{{ .Values.tls.proxy.cert_name }}"
@@ -69,6 +71,8 @@ kind: Certificate
 metadata:
   name: "{{ template "pulsar.fullname" . }}-{{ .Values.tls.broker.cert_name }}"
   namespace: {{ template "pulsar.namespace" . }}
+  annotations:
+{{ toYaml .Values.certs.existing_issuer.annotations | indent 4 }}
 spec:
   # Secret names are always required.
   secretName: "{{ .Release.Name }}-{{ .Values.tls.broker.cert_name }}"
@@ -111,6 +115,8 @@ kind: Certificate
 metadata:
   name: "{{ template "pulsar.fullname" . }}-{{ .Values.tls.bookie.cert_name }}"
   namespace: {{ template "pulsar.namespace" . }}
+  annotations:
+{{ toYaml .Values.certs.existing_issuer.annotations | indent 4 }}
 spec:
   # Secret names are always required.
   secretName: "{{ .Release.Name }}-{{ .Values.tls.bookie.cert_name }}"
@@ -152,6 +158,8 @@ kind: Certificate
 metadata:
   name: "{{ template "pulsar.fullname" . }}-{{ .Values.tls.autorecovery.cert_name }}"
   namespace: {{ template "pulsar.namespace" . }}
+  annotations:
+{{ toYaml .Values.certs.existing_issuer.annotations | indent 4 }}
 spec:
   # Secret names are always required.
   secretName: "{{ .Release.Name }}-{{ .Values.tls.autorecovery.cert_name }}"
@@ -190,6 +198,8 @@ kind: Certificate
 metadata:
   name: "{{ template "pulsar.fullname" . }}-{{ .Values.tls.toolset.cert_name }}"
   namespace: {{ template "pulsar.namespace" . }}
+  annotations:
+{{ toYaml .Values.certs.existing_issuer.annotations | indent 4 }}
 spec:
   # Secret names are always required.
   secretName: "{{ .Release.Name }}-{{ .Values.tls.toolset.cert_name }}"
@@ -228,6 +238,8 @@ kind: Certificate
 metadata:
   name: "{{ template "pulsar.fullname" . }}-{{ .Values.tls.zookeeper.cert_name }}"
   namespace: {{ template "pulsar.namespace" . }}
+  annotations:
+{{ toYaml .Values.certs.existing_issuer.annotations | indent 4 }}
 spec:
   # Secret names are always required.
   secretName: "{{ .Release.Name }}-{{ .Values.tls.zookeeper.cert_name }}"
