@@ -123,6 +123,8 @@ components:
   pulsar_manager: true
   # pulsar heartbeat
   pulsar_heartbeat: false
+  # pulsar sql
+  sql: false
 
 ## Monitoring Components
 ##
@@ -240,6 +242,9 @@ tls:
   # settings for generating certs for toolset
   toolset:
     cert_name: tls-toolset
+  sql:
+    enabled: false
+    cert_name: tls-proxy
 
 # Enable or disable broker authentication and authorization.
 auth:
@@ -1147,3 +1152,25 @@ pulsar_manager:
 #   kafkaListeners: kafka_internal://0.0.0.0:9092
 #   kafkaProtocolMap: kafka_internal:PLAINTEXT
 #   kafkaAdvertisedListeners: kafka_internal://localhost:9092
+
+## Pulsar SQL
+## templates/pulsar-sql-statefulset.yaml
+##
+sql:
+  component: sql
+  workerReplicaCount: 1
+  # nodeSelector:
+  #   cloud.google.com/gke-nodepool: default-pool
+  annotations: {}
+  tolerations: []
+  gracePeriod: 30
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 0.1
+  ports:
+    http: 8080
+    https: 8443
+  service:
+    annotations: {}
+  

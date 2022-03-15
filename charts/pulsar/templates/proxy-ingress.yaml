@@ -18,7 +18,7 @@
 #
 
 {{- if .Values.proxy.ingress.enabled }}
-apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   labels:
@@ -43,12 +43,17 @@ spec:
     - http:
         paths:
           - path: {{ .Values.proxy.ingress.path }}
+            pathType: ImplementationSpecific
             backend:
-              serviceName: "{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}"
+              service:
+                name: "{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}"
               {{- if and .Values.tls.enabled .Values.tls.proxy.enabled }}
-              servicePort: {{ .Values.proxy.ports.https }}
+                port: 
+                  number: {{ .Values.proxy.ports.https }}
               {{- else }}
-              servicePort: {{ .Values.proxy.ports.http }}
+              service:
+                port: 
+                  number: {{ .Values.proxy.ports.http }}
               {{- end }}
       {{- if .Values.proxy.ingress.hostname }}
       host: {{ .Values.proxy.ingress.hostname }}
