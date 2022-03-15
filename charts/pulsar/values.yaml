@@ -1154,7 +1154,6 @@ pulsar_manager:
 #   kafkaAdvertisedListeners: kafka_internal://localhost:9092
 
 ## Pulsar SQL
-## templates/pulsar-sql-statefulset.yaml
 ##
 sql:
   component: sql
@@ -1173,4 +1172,11 @@ sql:
     https: 8443
   service:
     annotations: {}
+  tls:
+    allowInsecureConnection: true
+    hostnameVerification: false
+    trustCertFilePath:
+  auth:
+    plugin: org.apache.pulsar.client.impl.auth.AuthenticationToken
+    params:
   

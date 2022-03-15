@@ -63,6 +63,24 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+        {{- if .Values.storageOffload }}
+        {{- if .Values.storageOffload.driver }}
+        {{- if eq .Values.storageOffload.driver "aws-s3" }}
+        - name: AWS_ACCESS_KEY_ID
+          value: "{{ .Values.storageOffload.accessKey }}"
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "{{ .Values.storageOffload.accessSecret }}"
+        {{- end}}
+        {{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+        {{- end}}
+        {{- if eq .Values.storageOffload.driver "azureblob" }}
+        - name: AZURE_STORAGE_ACCOUNT
+          value: "{{ .Values.storageOffload.storageAccount }}"
+        - name: AZURE_STORAGE_ACCESS_KEY
+          value: "{{ .Values.storageOffload.storageAccountKey }}"
+        {{- end}}
+        {{- end}}
+        {{- end}}
         volumeMounts:
         - mountPath: "/etc/data"
           name: data
@@ -78,6 +96,15 @@ spec:
           name: ca
           readOnly: true
         {{- end}}
+        {{- if .Values.storageOffload }}
+        {{- if .Values.storageOffload.driver }}
+        {{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+        - name: gcp-service-account
+          readOnly: true
+          mountPath: /pulsar/gcp-service-account
+        {{- end }}
+        {{- end }}
+        {{- end }}
         {{- if .Values.sql.extraVolumeMounts }}
 {{ toYaml .Values.sql.extraVolumeMounts | indent 8 }}
         {{- end }}
@@ -105,6 +132,15 @@ spec:
           items:
           - key: ca.crt
             path: ca.crt
+      {{- end }}
+      {{- if .Values.storageOffload }}
+      {{- if .Values.storageOffload.driver }}
+      {{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+      - name: gcp-service-account
+        secret:
+          secretName: {{ .Values.storageOffload.gcsServiceAccountSecret }}
+      {{- end }}
+      {{- end }}
       {{- end }}
       {{- if .Values.sql.extraVolumes }}
 {{ toYaml .Values.sql.extraVolumes | indent 6 }}
