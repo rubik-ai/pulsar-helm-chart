@@ -1,0 +1,24 @@
+{{- if .Values.proxy.tcpIngress.enabled }}
+apiVersion: configuration.konghq.com/v1beta1
+kind: TCPIngress
+metadata:
+  labels:
+    {{- include "pulsar.standardLabels" . | nindent 4 }}
+    component: {{ .Values.proxy.component }}
+  annotations:
+{{- with .Values.proxy.tcpIngress.annotations }}
+{{ toYaml . | indent 4 }}
+{{- end }}
+  name: "{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}"
+  namespace: {{ template "pulsar.namespace" . }}
+spec:
+  rules:
+  - backend:
+      serviceName: "{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}"
+      servicePort: {{ .Values.proxy.ports.pulsarssl }}
+    port: {{ .Values.proxy.tcpIngress.pulsarSslPort }}
+  - backend:
+      serviceName: "{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}"
+      servicePort: {{ .Values.proxy.ports.https }}
+    port: {{ .Values.proxy.tcpIngress.httpsPort }}
+{{- end }}
