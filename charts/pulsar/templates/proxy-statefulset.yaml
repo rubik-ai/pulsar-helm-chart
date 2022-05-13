@@ -294,6 +294,16 @@ spec:
             - key: ca.crt
               path: ca.crt
         {{- end }}
+        {{- if .Values.certs.existing_certificate.enabled }}
+        - name: proxy-certs
+          secret:
+            secretName: "{{ .Values.certs.existing_certificate.secretName }}"
+            items:
+              - key: tls.crt
+                path: tls.crt
+              - key: tls.key
+                path: tls.key
+        {{ else }}
         - name: proxy-certs
           secret:
             secretName: "{{ .Release.Name }}-{{ .Values.tls.proxy.cert_name }}"
@@ -302,6 +312,7 @@ spec:
                 path: tls.crt
               - key: tls.key
                 path: tls.key
+        {{- end }}
         {{- end}}
       {{- end}}
 {{- end }}

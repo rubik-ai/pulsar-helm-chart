@@ -43,7 +43,9 @@ data:
   webServicePortTls: "{{ .Values.proxy.ports.https }}"
   tlsCertificateFilePath: "/pulsar/certs/proxy/tls.crt"
   tlsKeyFilePath: "/pulsar/certs/proxy/tls.key"
+  {{- if not .Values.certs.existing_certificate.enabled }}
   tlsTrustCertsFilePath: "/pulsar/certs/ca/ca.crt"
+  {{- end }}
   {{- if and .Values.tls.enabled .Values.tls.broker.enabled }}
   # if broker enables TLS, configure proxy to talk to broker using TLS
   brokerServiceURLTLS: pulsar+ssl://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.pulsarssl }}
