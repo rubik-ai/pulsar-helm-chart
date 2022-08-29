@@ -47,14 +47,12 @@ spec:
             backend:
               service:
                 name: "{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}"
-              {{- if and .Values.tls.enabled .Values.tls.proxy.enabled }}
-                port: 
+                port:
+                  {{- if and .Values.tls.enabled .Values.tls.proxy.enabled }}
                   number: {{ .Values.proxy.ports.https }}
-              {{- else }}
-              service:
-                port: 
+                  {{- else }}
                   number: {{ .Values.proxy.ports.http }}
-              {{- end }}
+                  {{- end }}
       {{- if .Values.proxy.ingress.hostname }}
       host: {{ .Values.proxy.ingress.hostname }}
       {{- end }}

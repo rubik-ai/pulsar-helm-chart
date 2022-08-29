@@ -101,6 +101,10 @@ spec:
     {{- if and .Values.rbac.enabled .Values.rbac.psp }}
       serviceAccountName: "{{ template "pulsar.fullname" . }}-{{ .Values.zookeeper.component }}"
     {{- end }}
+      {{- if .Values.zookeeper.securityContext }}
+      securityContext:
+{{ toYaml .Values.zookeeper.securityContext | indent 8 }}
+      {{- end }}
       containers:
       - name: "{{ template "pulsar.fullname" . }}-{{ .Values.zookeeper.component }}"
         image: "{{ .Values.images.zookeeper.repository }}:{{ .Values.images.zookeeper.tag }}"
@@ -112,6 +116,9 @@ spec:
         command: ["sh", "-c"]
         args:
         - >
+        {{- if .Values.zookeeper.additionalCommand }}
+          {{ .Values.zookeeper.additionalCommand }}
+        {{- end }}
           bin/apply-config-from-env.py conf/zookeeper.conf;
           {{- include "pulsar.zookeeper.tls.settings" . | nindent 10 }}
           bin/generate-zookeeper-config.sh conf/zookeeper.conf;
@@ -138,6 +145,12 @@ spec:
         envFrom:
         - configMapRef:
             name: "{{ template "pulsar.fullname" . }}-{{ .Values.zookeeper.component }}"
+        {{- $zkConnectCommand := "" -}}
+        {{- if and .Values.tls.enabled .Values.tls.zookeeper.enabled }}
+        {{- $zkConnectCommand = print "openssl s_client -quiet -crlf -connect localhost:" .Values.zookeeper.ports.clientTls " -cert /pulsar/certs/zookeeper/tls.crt -key /pulsar/certs/zookeeper/tls.key" -}}
+        {{- else -}}
+        {{- $zkConnectCommand = print "nc -q 1 localhost " .Values.zookeeper.ports.client -}}
+        {{- end }}
         {{- if .Values.zookeeper.probe.readiness.enabled }}
         {{- if and .Values.rbac.enabled .Values.rbac.psp }}
         securityContext:
@@ -146,7 +159,11 @@ spec:
         readinessProbe:
           exec:
             command:
-            - bin/pulsar-zookeeper-ruok.sh
+            - timeout
+            - "{{ .Values.zookeeper.probe.readiness.timeoutSeconds }}"
+            - bash
+            - -c
+            - 'echo ruok | {{ $zkConnectCommand }} | grep imok'
           initialDelaySeconds: {{ .Values.zookeeper.probe.readiness.initialDelaySeconds }}
           periodSeconds: {{ .Values.zookeeper.probe.readiness.periodSeconds }}
           timeoutSeconds: {{ .Values.zookeeper.probe.readiness.timeoutSeconds }}
@@ -156,7 +173,11 @@ spec:
         livenessProbe:
           exec:
             command:
-            - bin/pulsar-zookeeper-ruok.sh
+            - timeout
+            - "{{ .Values.zookeeper.probe.liveness.timeoutSeconds }}"
+            - bash
+            - -c
+            - 'echo ruok | {{ $zkConnectCommand }} | grep imok'
           initialDelaySeconds: {{ .Values.zookeeper.probe.liveness.initialDelaySeconds }}
           periodSeconds: {{ .Values.zookeeper.probe.liveness.periodSeconds }}
           timeoutSeconds: {{ .Values.zookeeper.probe.liveness.timeoutSeconds }}
@@ -166,7 +187,11 @@ spec:
         startupProbe:
           exec:
             command:
-            - bin/pulsar-zookeeper-ruok.sh
+            - timeout
+            - "{{ .Values.zookeeper.probe.startup.timeoutSeconds }}"
+            - bash
+            - -c
+            - 'echo ruok | {{ $zkConnectCommand }} | grep imok'
           initialDelaySeconds: {{ .Values.zookeeper.probe.startup.initialDelaySeconds }}
           periodSeconds: {{ .Values.zookeeper.probe.startup.periodSeconds }}
           timeoutSeconds: {{ .Values.zookeeper.probe.startup.timeoutSeconds }}
@@ -217,6 +242,7 @@ spec:
           name: "{{ template "pulsar.fullname" . }}-keytool-configmap"
           defaultMode: 0755
       {{- end}}
+      {{- include "pulsar.imagePullSecrets" . | nindent 6}}
 {{- if and (and .Values.persistence .Values.volumes.persistence) .Values.zookeeper.volumes.persistence }}
   volumeClaimTemplates:
   - metadata:

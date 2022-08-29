@@ -198,6 +198,9 @@ spec:
         command: ["sh", "-c"]
         args:
         - >
+        {{- if .Values.broker.additionalCommand }}
+          {{ .Values.broker.additionalCommand }}
+        {{- end }}
           bin/apply-config-from-env.py conf/broker.conf;
           bin/gen-yml-from-env.py conf/functions_worker.yml;
           echo "OK" > status;
@@ -233,6 +236,9 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.name
+{{- if .Values.broker.extraEnvs }}
+{{ toYaml .Values.broker.extraEnvs | indent 8 }}
+{{- end }}
         {{- if .Values.kop }}
         - name: PULSAR_PREFIX_kafkaAdvertisedListeners
           value: PLAINTEXT://$(POD_NAME).{{ template "pulsar.broker.service" . }}.{{ template "pulsar.namespace" . }}.svc.{{ .Values.clusterDomain }}:{{ .Values.kop.listenerPort }}
