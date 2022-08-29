@@ -264,3 +264,4 @@ tips and tricks for troubleshooting common issues. Please examine these first be
    - Update the `charts/index.yaml` in Pulsar website.
 
 4. Trigger the Pulsar website build to make the release available under https://pulsar.apache.org/charts.
+
