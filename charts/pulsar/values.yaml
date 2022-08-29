@@ -40,6 +40,11 @@ initialize: false
 ## Set cluster name
 # clusterName:
 
+## add custom labels to components of cluster
+# labels:
+#   environment: dev
+#   customer: apache
+
 ## Pulsar Metadata Prefix
 ##
 ## By default, pulsar stores all the metadata at root path.
@@ -120,7 +125,7 @@ components:
   # toolset
   toolset: true
   # pulsar manager
-  pulsar_manager: true
+  pulsar_manager: false
   # pulsar heartbeat
   pulsar_heartbeat: false
   # pulsar sql
@@ -162,38 +167,38 @@ extra:
 images:
   zookeeper:
     repository: apachepulsar/pulsar-all
-    tag: 2.8.1
+    tag: 2.10.1
     pullPolicy: IfNotPresent
   bookie:
     repository: apachepulsar/pulsar-all
-    tag: 2.8.1
+    tag: 2.10.1
     pullPolicy: IfNotPresent
   autorecovery:
     repository: apachepulsar/pulsar-all
-    tag: 2.8.1
+    tag: 2.10.1
     pullPolicy: IfNotPresent
   broker:
     repository: apachepulsar/pulsar-all
-    tag: 2.8.1
+    tag: 2.10.1
     pullPolicy: IfNotPresent
   proxy:
     repository: apachepulsar/pulsar-all
-    tag: 2.8.1
+    tag: 2.10.1
     pullPolicy: IfNotPresent
   functions:
     repository: apachepulsar/pulsar-all
-    tag: 2.8.1
+    tag: 2.10.1
   prometheus:
     repository: prom/prometheus
     tag: v2.17.2
     pullPolicy: IfNotPresent
   grafana:
     repository: streamnative/apache-pulsar-grafana-dashboard-k8s
-    tag: 0.0.10
+    tag: 0.0.16
     pullPolicy: IfNotPresent
   pulsar_manager:
     repository: apachepulsar/pulsar-manager
-    tag: v0.1.0
+    tag: v0.3.0
     pullPolicy: IfNotPresent
     hasCommand: false
   pulsar_heartbeat:
@@ -283,7 +288,7 @@ certs:
     name: ca
     secretName: svc-cluster-local
   internal_issuer:
-    apiVersion: cert-manager.io/v1alpha2
+    apiVersion: cert-manager.io/v1
     enabled: false
     component: internal-cert-issuer
     type: selfsigning
@@ -309,7 +314,7 @@ zookeeper:
   replicaCount: 3
   updateStrategy:
     type: RollingUpdate
-  podManagementPolicy: OrderedReady
+  podManagementPolicy: Parallel
   # If using Prometheus-Operator enable this PodMonitor to discover zookeeper scrape targets
   # Prometheus-Operator does not add scrape targets based on k8s annotations
   podMonitor:
@@ -330,21 +335,21 @@ zookeeper:
     liveness:
       enabled: true
       failureThreshold: 10
-      initialDelaySeconds: 10
+      initialDelaySeconds: 20
       periodSeconds: 30
-      timeoutSeconds: 5
+      timeoutSeconds: 30
     readiness:
       enabled: true
       failureThreshold: 10
-      initialDelaySeconds: 10
+      initialDelaySeconds: 20
       periodSeconds: 30
-      timeoutSeconds: 5
+      timeoutSeconds: 30
     startup:
       enabled: false
       failureThreshold: 30
-      initialDelaySeconds: 10
+      initialDelaySeconds: 20
       periodSeconds: 30
-      timeoutSeconds: 5
+      timeoutSeconds: 30
   affinity:
     anti_affinity: true
     # Set the anti affinity type. Valid values:
@@ -373,6 +378,10 @@ zookeeper:
   #     readOnly: true
   extraVolumes: []
   extraVolumeMounts: []
+  # Ensures 2.10.0 non-root docker image works correctly.
+  securityContext:
+    fsGroup: 0
+    fsGroupChangePolicy: "OnRootMismatch"
   volumes:
     # use a persistent volume or emptyDir
     persistence: true
@@ -406,7 +415,10 @@ zookeeper:
       -XX:+UnlockExperimentalVMOptions
       -XX:+DoEscapeAnalysis
       -XX:+DisableExplicitGC
+      -XX:+ExitOnOutOfMemoryError
       -XX:+PerfDisableSharedMem
+  ## Add a custom command to the start up process of the zookeeper pods (e.g. update-ca-certificates, jvm commands, etc)
+  additionalCommand:
   ## Zookeeper service
   ## templates/zookeeper-service.yaml
   ##
@@ -498,6 +510,10 @@ bookkeeper:
   #     readOnly: true
   extraVolumes: []
   extraVolumeMounts: []
+  # Ensures 2.10.0 non-root docker image works correctly.
+  securityContext:
+    fsGroup: 0
+    fsGroupChangePolicy: "OnRootMismatch"
   volumes:
     # use a persistent volume or emptyDir
     persistence: true
@@ -516,6 +532,16 @@ bookkeeper:
         # type: pd-ssd
         # fsType: xfs
         # provisioner: kubernetes.io/gce-pd
+      useMultiVolumes: false
+      multiVolumes:
+        - name: journal0
+          size: 10Gi
+          # storageClassName: existent-storage-class
+          mountPath: /pulsar/data/bookkeeper/journal0
+        - name: journal1
+          size: 10Gi
+          # storageClassName: existent-storage-class
+          mountPath: /pulsar/data/bookkeeper/journal1
     ledgers:
       name: ledgers
       size: 50Gi
@@ -523,6 +549,16 @@ bookkeeper:
       # storageClassName:
       # storageClass:
         # ...
+      useMultiVolumes: false
+      multiVolumes:
+        - name: ledgers0
+          size: 10Gi
+          # storageClassName: existent-storage-class
+          mountPath: /pulsar/data/bookkeeper/ledgers0
+        - name: ledgers1
+          size: 10Gi
+          # storageClassName: existent-storage-class
+          mountPath: /pulsar/data/bookkeeper/ledgers1
 
     ## use a single common volume for both journal and ledgers
     useSingleCommonVolume: false
@@ -557,12 +593,17 @@ bookkeeper:
       -XX:+ExitOnOutOfMemoryError
       -XX:+PerfDisableSharedMem
       -XX:+PrintGCDetails
+      -XX:+PrintGCTimeStamps
+      -XX:+PrintGCApplicationStoppedTime
+      -XX:+PrintHeapAtGC
       -verbosegc
     # configure the memory settings based on jvm memory settings
     dbStorage_writeCacheMaxSizeMb: "32"
     dbStorage_readAheadCacheMaxSizeMb: "32"
     dbStorage_rocksDB_writeBufferSizeMB: "8"
     dbStorage_rocksDB_blockCacheSize: "8388608"
+  ## Add a custom command to the start up process of the bookie pods (e.g. update-ca-certificates, jvm commands, etc)
+  additionalCommand:
   ## Bookkeeper Service
   ## templates/bookkeeper-service.yaml
   ##
@@ -615,6 +656,7 @@ autorecovery:
   configData:
     BOOKIE_MEM: >
       -Xms64m -Xmx64m
+    PULSAR_PREFIX_useV2WireProtocol: "true"
 
 ## Pulsar Zookeeper metadata. The metadata will be deployed as
 ## soon as the last zookeeper node is reachable. The deployment
@@ -627,7 +669,7 @@ pulsar_metadata:
   image:
     # the image used for running `pulsar-cluster-initialize` job
     repository: apachepulsar/pulsar-all
-    tag: 2.7.2
+    tag: 2.10.1
     pullPolicy: IfNotPresent
   ## set an existing configuration store
   # configurationStore:
@@ -639,6 +681,9 @@ pulsar_metadata:
   #
   # userProvidedZookeepers: "zk01.example.com:2181,zk02.example.com:2181"
 
+# Can be used to run extra commands in the initialization jobs e.g. to quit istio sidecars etc.
+extraInitCommand: ""
+
 ## Pulsar: Broker cluster
 ## templates/broker-statefulset.yaml
 ##
@@ -647,6 +692,11 @@ broker:
   # so the metrics are correctly rendered in grafana dashboard
   component: broker
   replicaCount: 3
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    metrics: ~
   # If using Prometheus-Operator enable this PodMonitor to discover broker scrape targets
   # Prometheus-Operator does not add scrape targets based on k8s annotations
   podMonitor:
@@ -707,6 +757,12 @@ broker:
   #     readOnly: true
   extraVolumes: []
   extraVolumeMounts: []
+  extraEnvs: []
+#    - name: POD_NAME
+#      valueFrom:
+#        fieldRef:
+#          apiVersion: v1
+#          fieldPath: metadata.name
   ## Broker configmap
   ## templates/broker-configmap.yaml
   ##
@@ -731,6 +787,8 @@ broker:
     managedLedgerDefaultEnsembleSize: "2"
     managedLedgerDefaultWriteQuorum: "2"
     managedLedgerDefaultAckQuorum: "2"
+  ## Add a custom command to the start up process of the broker pods (e.g. update-ca-certificates, jvm commands, etc)
+  additionalCommand:
   ## Broker service
   ## templates/broker-service.yaml
   ##
@@ -761,6 +819,11 @@ proxy:
   # so the metrics are correctly rendered in grafana dashboard
   component: proxy
   replicaCount: 3
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 3
+    metrics: ~
   # If using Prometheus-Operator enable this PodMonitor to discover proxy scrape targets
   # Prometheus-Operator does not add scrape targets based on k8s annotations
   podMonitor:
@@ -816,6 +879,12 @@ proxy:
   #     readOnly: true
   extraVolumes: []
   extraVolumeMounts: []
+  extraEnvs: []
+#    - name: POD_IP
+#      valueFrom:
+#        fieldRef:
+#          apiVersion: v1
+#          fieldPath: status.podIP
   ## Proxy configmap
   ## templates/proxy-configmap.yaml
   ##
@@ -837,6 +906,9 @@ proxy:
       -XX:-ResizePLAB
       -XX:+ExitOnOutOfMemoryError
       -XX:+PerfDisableSharedMem
+    httpNumThreads: "8"
+  ## Add a custom command to the start up process of the proxy pods (e.g. update-ca-certificates, jvm commands, etc)
+  additionalCommand:
   ## Proxy service
   ## templates/proxy-service.yaml
   ##
@@ -978,6 +1050,8 @@ toolset:
       -Xms64M
       -Xmx128M
       -XX:MaxDirectMemorySize=128M
+  ## Add a custom command to the start up process of the toolset pods (e.g. update-ca-certificates, jvm commands, etc)
+  additionalCommand:
 
 #############################################################
 ### Monitoring Stack : Prometheus / Grafana

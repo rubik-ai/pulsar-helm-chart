@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-{{- if .Values.initialize }}
+{{- if or .Release.IsInstall .Values.initialize }}
 {{- if .Values.components.bookkeeper }}
 apiVersion: batch/v1
 kind: Job
@@ -27,6 +27,11 @@ metadata:
     {{- include "pulsar.standardLabels" . | nindent 4 }}
     component: "{{ .Values.bookkeeper.component }}-init"
 spec:
+# This feature was previously behind a feature gate for several Kubernetes versions and will default to true in 1.23 and beyond
+# https://kubernetes.io/docs/reference/command-line-tools-reference/feature-gates/
+{{- if .Values.job.ttl.enabled }}
+  ttlSecondsAfterFinished: {{ .Values.job.ttl.secondsAfterFinished }}
+{{- end }}
   template:
     spec:
     {{- if and .Values.rbac.enabled .Values.rbac.psp }}
@@ -69,6 +74,9 @@ spec:
                 {{- end }}
                 bin/bookkeeper shell initnewcluster;
             fi
+            {{- if .Values.extraInitCommand }}
+              {{ .Values.extraInitCommand }}
+            {{- end }}
       {{- if and .Values.rbac.enabled .Values.rbac.psp }}
         securityContext:
           readOnlyRootFilesystem: false
