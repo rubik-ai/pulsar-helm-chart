@@ -271,6 +271,7 @@ auth:
     # pulsar-admin client to broker/proxy communication
     client: "admin"
   superUsersList: broker-admin,proxy-admin,admin
+  proxyRolesList: proxy-admin
 
 ######################################################################
 # External dependencies
