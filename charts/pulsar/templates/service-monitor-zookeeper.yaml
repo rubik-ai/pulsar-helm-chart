@@ -1,0 +1,20 @@
+{{- if and .Values.components.zookeeper .Values.zookeeper.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    component: {{ .Values.zookeeper.component }}
+  name: {{ template "pulsar.fullname" . }}-{{ .Values.zookeeper.component }}
+spec:
+  endpoints:
+  {{- with .Values.zookeeper.serviceMonitor }}
+  - interval: {{ .interval }}
+    port: {{ .port }}
+  {{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      component: {{ .Values.zookeeper.component }}
+{{- end }}

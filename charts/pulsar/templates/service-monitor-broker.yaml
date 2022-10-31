@@ -1,0 +1,20 @@
+{{- if and .Values.components.broker .Values.broker.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    component: {{ .Values.broker.component }}
+  name: {{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}
+spec:
+  endpoints:
+  {{- with .Values.broker.serviceMonitor }}
+  - interval: {{ .interval }}
+    port: {{ .port }}
+  {{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      component: {{ .Values.broker.component }}
+{{- end }}
