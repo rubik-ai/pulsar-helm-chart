@@ -931,8 +931,8 @@ proxy:
     # Enable 'auth' option if yor componenet need tokens to authenticate to pull metrics    
     authorization:
       enabled: true
-      secretName: "proxy-auth-test"
-      secretKeyName: "auth-token"
+      secretName: "pulsar-token-admin"
+      secretKeyName: "APIKEY"
   # True includes annotation for statefulset that contains hash of corresponding configmap, which will cause pods to restart on configmap change
   restartPodsOnConfigMapChange: false
   # nodeSelector:
