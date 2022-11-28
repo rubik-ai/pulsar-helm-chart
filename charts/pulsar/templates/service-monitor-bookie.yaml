@@ -9,8 +9,26 @@ spec:
   endpoints:
   {{- with .Values.bookkeeper.serviceMonitor }}
   - interval: {{ .interval }}
+    scrapeTimeout: {{ .scrapeTimeout }}
+    {{- if .https.enabled }}
+    port: {{ .https.port }}
+    scheme: {{ .https.scheme }}
+    tlsConfig:
+      insecureSkipVerify: true
+      {{- if .https.certs.enabled }}
+      caFile: {{ .https.certs.caFile }}
+      keyFile: {{ .https.certs.keyFile }}
+      certFile: {{ .https.certs.certFile }}
+      {{- end }}
+    {{- else }}
     port: {{ .port }}
-  {{- end }}
+    {{- end }}
+    {{- if .authorization.enabled }}
+    bearerTokenSecret:
+      name: {{ .authorization.secretName }}
+      key: {{ .authorization.secretKeyName }}
+    {{- end }}
+  {{- end }}    
   namespaceSelector:
     matchNames:
     - {{ .Release.Namespace }}
