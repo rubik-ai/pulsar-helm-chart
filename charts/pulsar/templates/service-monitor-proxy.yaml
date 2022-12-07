@@ -9,7 +9,21 @@ spec:
   endpoints:
   {{- with .Values.proxy.serviceMonitor }}
   - interval: {{ .interval }}
+    scrapeTimeout: {{ .scrapeTimeout }}
     port: {{ .port }}
+    scheme: {{ .scheme }}
+    tlsConfig:
+      insecureSkipVerify: true
+      {{- if .certs.enabled }}
+      caFile: {{ .certs.caFile }}
+      keyFile: {{ .certs.keyFile }}
+      certFile: {{ .certs.certFile }}
+      {{- end }}
+    {{- if .authorization.enabled }}
+    bearerTokenSecret:
+      name: {{ .authorization.secretName }}
+      key: {{ .authorization.secretKeyName }}
+    {{- end }}
   {{- end }}
   namespaceSelector:
     matchNames:

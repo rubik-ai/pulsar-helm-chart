@@ -325,7 +325,24 @@ zookeeper:
   serviceMonitor:
     enabled: true
     interval: 30s
+    scrapeTimeout: 10s
     port: http
+    # Enable 'https' option if you are exposing https port on your service and pull metrics from https
+    https:
+      enabled: false
+      port: https
+      scheme: https
+    # To enable 'certs' option you need to mount same paths in prometheus containers as well 
+      certs:
+        enabled: false
+        caFile: /home/path1   # set to your actual paths
+        keyFile: /home/path2
+        certFile: /home/path3
+    # Enable 'auth' option if yor componenet need tokens to authenticate to pull metrics    
+    authorization:
+      enabled: false
+      secretName: "proxy-auth-test"
+      secretKeyName: "auth-token"
   # True includes annotation for statefulset that contains hash of corresponding configmap, which will cause pods to restart on configmap change
   restartPodsOnConfigMapChange: false
   ports:
@@ -466,7 +483,24 @@ bookkeeper:
   serviceMonitor:
     enabled: true
     interval: 30s
+    scrapeTimeout: 10s
     port: http
+    # Enable 'https' option if you are exposing https port on your service and pull metrics from https
+    https:
+      enabled: false
+      port: https
+      scheme: https
+    # To enable 'certs' option you need to mount same paths in prometheus containers as well 
+      certs:
+        enabled: false
+        caFile: /home/path1   # set to your actual paths
+        keyFile: /home/path2
+        certFile: /home/path3
+    # Enable 'auth' option if yor componenet need tokens to authenticate to pull metrics    
+    authorization:
+      enabled: false
+      secretName: "proxy-auth-test"
+      secretKeyName: "auth-token"
   # True includes annotation for statefulset that contains hash of corresponding configmap, which will cause pods to restart on configmap change
   restartPodsOnConfigMapChange: false
   ports:
@@ -647,7 +681,24 @@ autorecovery:
   serviceMonitor:
     enabled: true
     interval: 30s
+    scrapeTimeout: 10s
     port: http
+    # Enable 'https' option if you are exposing https port on your service and pull metrics from https
+    https:
+      enabled: false
+      port: https
+      scheme: https
+    # To enable 'certs' option you need to mount same paths in prometheus containers as well 
+      certs:
+        enabled: false
+        caFile: /home/path1   # set to your actual paths
+        keyFile: /home/path2
+        certFile: /home/path3
+    # Enable 'auth' option if yor componenet need tokens to authenticate to pull metrics    
+    authorization:
+      enabled: false
+      secretName: "proxy-auth-test"
+      secretKeyName: "auth-token"
   # True includes annotation for statefulset that contains hash of corresponding configmap, which will cause pods to restart on configmap change
   restartPodsOnConfigMapChange: false
   ports:
@@ -726,7 +777,24 @@ broker:
   serviceMonitor:
     enabled: true
     interval: 30s
+    scrapeTimeout: 10s
     port: http
+    # Enable 'https' option if you are exposing https port on your service and pull metrics from https
+    https:
+      enabled: false
+      port: https
+      scheme: https
+    # To enable 'certs' option you need to mount same paths in prometheus containers as well 
+      certs:
+        enabled: false
+        caFile: /home/path1   # set to your actual paths
+        keyFile: /home/path2
+        certFile: /home/path3
+    # Enable 'auth' option if yor componenet need tokens to authenticate to pull metrics    
+    authorization:
+      enabled: false
+      secretName: "proxy-auth-test"
+      secretKeyName: "auth-token"
   # True includes annotation for statefulset that contains hash of corresponding configmap, which will cause pods to restart on configmap change
   restartPodsOnConfigMapChange: false
   ports:
@@ -857,7 +925,20 @@ proxy:
   serviceMonitor:
     enabled: true
     interval: 30s
-    port: http
+    scrapeTimeout: 10s
+    port: https
+    scheme: https
+    # To enable 'certs' option you need to mount same paths in prometheus containers as well 
+    certs:
+      enabled: false
+      caFile: /home/path1   # set to your actual paths
+      keyFile: /home/path2
+      certFile: /home/path3
+    # Enable 'auth' option if yor componenet need tokens to authenticate to pull metrics    
+    authorization:
+      enabled: true
+      secretName: "pulsar-token-admin"
+      secretKeyName: "APIKEY"
   # True includes annotation for statefulset that contains hash of corresponding configmap, which will cause pods to restart on configmap change
   restartPodsOnConfigMapChange: false
   # nodeSelector:
