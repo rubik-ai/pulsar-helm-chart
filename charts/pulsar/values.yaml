@@ -534,9 +534,9 @@ bookkeeper:
     # preferredDuringSchedulingIgnoredDuringExecution - scheduler will try to enforce but not guranentee
     type: requiredDuringSchedulingIgnoredDuringExecution
   annotations: {}
-  jobAnnotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-delete-policy": hook-succeeded
+  # jobAnnotations:
+  #   "helm.sh/hook": pre-install,pre-upgrade
+  #   "helm.sh/hook-delete-policy": hook-succeeded
   tolerations: []
   gracePeriod: 30
   resources:
@@ -743,9 +743,9 @@ pulsar_metadata:
   # configurationStore:
   configurationStoreMetadataPrefix: ""
   configurationStorePort: 2181
-  jobAnnotations:
-    "helm.sh/hook": post-install,post-upgrade
-    "helm.sh/hook-delete-policy": hook-succeeded
+  # jobAnnotations:
+  #   "helm.sh/hook": pre-install,pre-upgrade
+  #   "helm.sh/hook-delete-policy": hook-succeeded
 
   ## optional, you can provide your own zookeeper metadata store for other components
   # to use this, you should explicit set components.zookeeper to false
