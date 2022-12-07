@@ -535,7 +535,7 @@ bookkeeper:
     type: requiredDuringSchedulingIgnoredDuringExecution
   annotations: {}
   jobAnnotations:
-    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": hook-succeeded
   tolerations: []
   gracePeriod: 30
@@ -744,7 +744,7 @@ pulsar_metadata:
   configurationStoreMetadataPrefix: ""
   configurationStorePort: 2181
   jobAnnotations:
-    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-delete-policy": hook-succeeded
 
   ## optional, you can provide your own zookeeper metadata store for other components
