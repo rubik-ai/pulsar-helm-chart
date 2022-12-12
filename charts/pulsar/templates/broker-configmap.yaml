@@ -62,6 +62,15 @@ data:
   PF_functionRuntimeFactoryConfigs_submittingInsidePod: "true"
   PF_functionRuntimeFactoryConfigs_installUserCodeDependencies: "true"
   PF_functionRuntimeFactoryConfigs_jobNamespace: {{ .Values.functions.namespace }}
+  {{- if and .Values.auth.authentication.enabled .Values.auth.authorization.enabled }}
+  PF_functionRuntimeFactoryConfigs_clientAuthenticationPlugin: "org.apache.pulsar.client.impl.auth.AuthenticationToken"
+  PF_functionRuntimeFactoryConfigs_clientAuthenticationParameters: "file:///pulsar/tokens/broker/token"
+  PF_functionRuntimeFactoryConfigs_configurationMetadataStoreUrl: "{{ template "pulsar.zookeeper.connect" . }}{{ .Values.metadataPrefix }}"
+  PF_functionRuntimeFactoryConfigs_authenticationProviders: "io.dataos.pulsar.auth.AuthenticationProviderHeimdall"
+  PF_functionRuntimeFactoryConfigs_authorizationEnabled: "true"
+  PF_functionRuntimeFactoryConfigs_authenticationEnabled: "true"
+  PF_functionRuntimeFactoryConfigs_superUserRoles: {{ .Values.auth.superUsersList }}
+  {{- end }}
   {{- if .Values.functions.component }}
   PF_functionRuntimeFactoryConfigs_jobName: {{ .Values.functions.component }}
   {{- end }}
@@ -81,6 +90,15 @@ data:
   PF_kubernetesContainerFactory_submittingInsidePod: "true"
   PF_kubernetesContainerFactory_installUserCodeDependencies: "true"
   PF_kubernetesContainerFactory_jobNamespace: {{ .Values.functions.namespace }}
+  {{- if and .Values.auth.authentication.enabled .Values.auth.authorization.enabled }}
+  PF_kubernetesContainerFactory_clientAuthenticationPlugin: "org.apache.pulsar.client.impl.auth.AuthenticationToken"
+  PF_kubernetesContainerFactory_clientAuthenticationParameters: "file:///pulsar/tokens/broker/token"
+  PF_kubernetesContainerFactory_configurationMetadataStoreUrl: "{{ template "pulsar.zookeeper.connect" . }}{{ .Values.metadataPrefix }}"
+  PF_kubernetesContainerFactory_authenticationProviders: "io.dataos.pulsar.auth.AuthenticationProviderHeimdall"
+  PF_kubernetesContainerFactory_authorizationEnabled: "true"
+  PF_kubernetesContainerFactory_authenticationEnabled: "true"
+  PF_kubernetesContainerFactory_superUserRoles: {{ .Values.auth.superUsersList }}
+  {{- end }}
   {{- if .Values.functions.component }}
   PF_kubernetesContainerFactory_jobName: {{ .Values.functions.component }}
   {{- end }}
