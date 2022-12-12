@@ -50,6 +50,15 @@ data:
   {{- end }}
   {{- if or .Values.components.functions .Values.extra.functionsAsPods }}
   functionsWorkerEnabled: "true"
+  {{- if and .Values.auth.authentication.enabled .Values.auth.authorization.enabled }}
+  PF_ClientAuthenticationParameters: "file:///pulsar/tokens/broker/token"
+  PF_ClientAuthenticationPlugin: "org.apache.pulsar.client.impl.auth.AuthenticationToken"
+  PF_authenticationEnabled: "true"
+  PF_authenticationProviders: "io.dataos.pulsar.auth.AuthenticationProviderHeimdall"
+  PF_authorizationEnabled: "true"
+  PF_authorizationProvider: io.dataos.pulsar.auth.AuthenticationProviderHeimdall
+  PF_configurationMetadataStoreUrl: "{{ template "pulsar.zookeeper.connect" . }}{{ .Values.metadataPrefix }}"
+  {{- end }}
   PF_functionRuntimeFactoryClassName: "org.apache.pulsar.functions.runtime.kubernetes.KubernetesRuntimeFactory"
   PF_pulsarFunctionsCluster: {{ template "pulsar.cluster.name" . }}
   PF_connectorsDirectory: ./connectors
