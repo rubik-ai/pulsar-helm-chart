@@ -71,8 +71,8 @@ data:
   PF_functionRuntimeFactoryConfigs_pulsarServiceUrl: "pulsar://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.pulsar }}/"
   {{- end }}
   {{- if and .Values.tls.enabled .Values.tls.broker.enabled }}
-  PF_functionRuntimeFactoryConfigs_pulsarAdminUrl: {{ .Values.functions.serviceUrl }}
-  PF_functionRuntimeFactoryConfigs_pulsarServiceUrl: {{ .Values.functions.adminUrl }}
+  PF_functionRuntimeFactoryConfigs_pulsarAdminUrl: {{ .Values.functions.adminUrl }}
+  PF_functionRuntimeFactoryConfigs_pulsarServiceUrl: {{ .Values.functions.serviceUrl }}
   {{- end }}
   PF_functionRuntimeFactoryConfigs_changeConfigMap: "{{ template "pulsar.fullname" . }}-{{ .Values.functions.component }}-config"
   PF_functionRuntimeFactoryConfigs_changeConfigMapNamespace: {{ template "pulsar.namespace" . }}
@@ -90,8 +90,8 @@ data:
   PF_kubernetesContainerFactory_pulsarServiceUrl: "pulsar://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.pulsar }}/"
   {{- end }}
   {{- if and .Values.tls.enabled .Values.tls.broker.enabled }}
-  PF_kubernetesContainerFactory_pulsarAdminUrl: {{ .Values.functions.serviceUrl }}
-  PF_kubernetesContainerFactory_pulsarServiceUrl:  {{ .Values.functions.adminUrl }}
+  PF_kubernetesContainerFactory_pulsarAdminUrl: {{ .Values.functions.adminUrl }}
+  PF_kubernetesContainerFactory_pulsarServiceUrl:  {{ .Values.functions.serviceUrl }}
   {{- end }}
   PF_kubernetesContainerFactory_changeConfigMap: "{{ template "pulsar.fullname" . }}-{{ .Values.functions.component }}-config"
   PF_kubernetesContainerFactory_changeConfigMapNamespace: {{ template "pulsar.namespace" . }}
