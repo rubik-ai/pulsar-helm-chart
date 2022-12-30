@@ -6,24 +6,9 @@ metadata:
     component: {{ .Values.proxy.component }}
   name: {{ template "pulsar.fullname" . }}-{{ .Values.proxy.component  }}
 spec:
+  {{- if .Values.proxy.serviceMonitor.endpoints }}
   endpoints:
-  {{- with .Values.proxy.serviceMonitor }}
-  - interval: {{ .interval }}
-    scrapeTimeout: {{ .scrapeTimeout }}
-    port: {{ .port }}
-    scheme: {{ .scheme }}
-    tlsConfig:
-      insecureSkipVerify: true
-      {{- if .certs.enabled }}
-      caFile: {{ .certs.caFile }}
-      keyFile: {{ .certs.keyFile }}
-      certFile: {{ .certs.certFile }}
-      {{- end }}
-    {{- if .authorization.enabled }}
-    bearerTokenSecret:
-      name: {{ .authorization.secretName }}
-      key: {{ .authorization.secretKeyName }}
-    {{- end }}
+{{ toYaml .Values.proxy.serviceMonitor.endpoints | indent 2 }}
   {{- end }}
   namespaceSelector:
     matchNames:
