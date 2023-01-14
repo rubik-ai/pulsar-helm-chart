@@ -70,7 +70,7 @@ data:
   # support version >= 2.5.0
   PF_functionRuntimeFactoryConfigs_pulsarRootDir: {{ template "pulsar.home" . }}
   PF_kubernetesContainerFactory_pulsarRootDir: {{ template "pulsar.home" . }}
-  # PF_functionRuntimeFactoryConfigs_pulsarDockerImageName: "{{ .Values.images.functions.repository }}:{{ .Values.images.functions.tag }}"
+  PF_functionRuntimeFactoryConfigs_pulsarDockerImageName: "{{ .Values.images.functions.repository }}:{{ .Values.images.functions.tag }}"
   PF_functionRuntimeFactoryConfigs_submittingInsidePod: "true"
   PF_functionRuntimeFactoryConfigs_installUserCodeDependencies: "true"
   PF_functionRuntimeFactoryConfigs_jobNamespace: {{ .Values.functions.namespace }}
@@ -86,10 +86,10 @@ data:
   PF_functionRuntimeFactoryConfigs_pulsarAdminUrl: {{ .Values.functions.adminUrl }}
   PF_functionRuntimeFactoryConfigs_pulsarServiceUrl: {{ .Values.functions.serviceUrl }}
   {{- end }}
-  # PF_functionRuntimeFactoryConfigs_changeConfigMap: "{{ template "pulsar.fullname" . }}-{{ .Values.functions.component }}-config"
-  # PF_functionRuntimeFactoryConfigs_changeConfigMapNamespace: {{ template "pulsar.namespace" . }}
+  PF_functionRuntimeFactoryConfigs_changeConfigMap: "{{ template "pulsar.fullname" . }}-{{ .Values.functions.component }}-config"
+  PF_functionRuntimeFactoryConfigs_changeConfigMapNamespace: {{ template "pulsar.namespace" . }}
   # support version < 2.5.0
-  # PF_kubernetesContainerFactory_pulsarDockerImageName: "{{ .Values.images.functions.repository }}:{{ .Values.images.functions.tag }}"
+  PF_kubernetesContainerFactory_pulsarDockerImageName: "{{ .Values.images.functions.repository }}:{{ .Values.images.functions.tag }}"
   PF_kubernetesContainerFactory_submittingInsidePod: "true"
   PF_kubernetesContainerFactory_installUserCodeDependencies: "true"
   PF_kubernetesContainerFactory_jobNamespace: {{ .Values.functions.namespace }}
@@ -105,8 +105,8 @@ data:
   PF_kubernetesContainerFactory_pulsarAdminUrl: {{ .Values.functions.adminUrl }}
   PF_kubernetesContainerFactory_pulsarServiceUrl:  {{ .Values.functions.serviceUrl }}
   {{- end }}
-  # PF_kubernetesContainerFactory_changeConfigMap: "{{ template "pulsar.fullname" . }}-{{ .Values.functions.component }}-config"
-  # PF_kubernetesContainerFactory_changeConfigMapNamespace: {{ template "pulsar.namespace" . }}
+  PF_kubernetesContainerFactory_changeConfigMap: "{{ template "pulsar.fullname" . }}-{{ .Values.functions.component }}-config"
+  PF_kubernetesContainerFactory_changeConfigMapNamespace: {{ template "pulsar.namespace" . }}
   {{- end }}
 
   # prometheus needs to access /metrics endpoint
