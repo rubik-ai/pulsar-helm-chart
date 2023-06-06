@@ -5,15 +5,15 @@ PACKAGED_CHART = ${DIR}-${VERSION}.tgz
 
 push-chart:
     @echo "=== Helm login ==="
-	aws ecr get-login-password --region ${AWS_REGION} | helm registry login ${ECR_HOST} --username AWS --password-stdin --debug
-	@echo "=== save chart ==="
-	helm chart save ${CH_DIR}/${DIR}/ $(ECR_HOST)/dataos-base-charts:${DIR}-${VERSION}
-	@echo
-	@echo "=== push chart ==="
-	helm chart push $(ECR_HOST)/dataos-base-charts:${DIR}-${VERSION}
-	@echo
-	@echo "=== logout of registry ==="
-	helm registry logout $(ECR_HOST)
+    aws ecr get-login-password --region ${AWS_REGION} | helm registry login ${ECR_HOST} --username AWS --password-stdin --debug
+    @echo "=== save chart ==="
+    helm chart save ${CH_DIR}/${DIR}/ $(ECR_HOST)/dataos-base-charts:${DIR}-${VERSION}
+    @echo
+    @echo "=== push chart ==="
+    helm chart push $(ECR_HOST)/dataos-base-charts:${DIR}-${VERSION}
+    @echo
+    @echo "=== logout of registry ==="
+    helm registry logout $(ECR_HOST)
 
 push-chart-oci:
     @echo "=== Helm login ==="
