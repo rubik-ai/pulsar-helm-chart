@@ -1,9 +1,11 @@
 CH_DIR = charts/
 DIR = pulsar
 VERSION = ${TAG}
-# PACKAGED_CHART = ${DIR}-${VERSION}.tgz
+PACKAGED_CHART = ${DIR}-${VERSION}.tgz
 
 push-chart:
+    @echo "=== Helm login ==="
+	aws ecr get-login-password --region ${AWS_REGION} | helm registry login --username AWS --password-stdin $(ECR_HOST)
 	@echo "=== save chart ==="
 	helm chart save ${CH_DIR}/${DIR}/ $(ECR_HOST)/dataos-base-charts:${DIR}-${VERSION}
 	@echo
@@ -13,6 +15,17 @@ push-chart:
 	@echo "=== logout of registry ==="
 	helm registry logout $(ECR_HOST)
 
+push-chart-oci:
+    @echo "=== Helm login ==="
+	aws ecr get-login-password --region ${AWS_REGION} | helm registry login --username AWS --password-stdin $(ECR_HOST)
+	@echo "=== package chart ==="
+	helm package ${CH_DIR}/${DIR} --version ${VERSION}
+	@echo
+	@echo "=== push chart ==="
+	helm push ${PACKAGED_CHART} oci://$(ECR_HOST)/dataos-base-charts
+	@echo
+	@echo "=== logout of registry ==="
+	helm registry logout $(ECR_HOST)
 
 
 
