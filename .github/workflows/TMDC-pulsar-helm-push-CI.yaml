@@ -1,4 +1,4 @@
-name: TMDC Docker Image CI workflow
+name: TMDC Helm chart push workflow to AWS ECR
 
 on:
   push:
