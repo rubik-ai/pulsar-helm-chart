@@ -42,5 +42,4 @@ jobs:
       env:
         TAG: ${{ github.ref_name }}
         ECR_HOST: ${{ steps.login-ecr.outputs.registry }}
-        AWS_REGION: us-west-2
       run: make push-chart  
