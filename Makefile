@@ -1,7 +1,8 @@
-CH_DIR = charts/
+CH_DIR = charts
 DIR = pulsar
 VERSION = ${TAG}
 PACKAGED_CHART = ${DIR}-${VERSION}.tgz
+
 
 push-chart:
     @echo "=== Helm login ==="
