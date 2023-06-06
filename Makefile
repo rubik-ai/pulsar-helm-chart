@@ -4,10 +4,8 @@ VERSION = ${TAG}
 # PACKAGED_CHART = ${DIR}-${VERSION}.tgz
 
 push-chart:
-	@echo "=== changing directory ==="
-	cd ${CH_DIR}
 	@echo "=== save chart ==="
-	helm chart save ${DIR}/ $(ECR_HOST)/dataos-base-charts:${DIR}-${VERSION}
+	helm chart save ${CH_DIR}/${DIR}/ $(ECR_HOST)/dataos-base-charts:${DIR}-${VERSION}
 	@echo
 	@echo "=== push chart ==="
 	helm chart push $(ECR_HOST)/dataos-base-charts:${DIR}-${VERSION}
