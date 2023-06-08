@@ -1,5 +1,19 @@
 # Steps to package and push Helm Chart to AWS ECR
 
+## Automated Steps
+
+Run ```sh make git-push ``` from root directory.
+
+It will automatically trigger the the github action pipeline with automated versioning.
+
+**NOTE:** If you want to update **CHART VERSION** of helm chart, please updated the ```sh VERSION ``` variable manually 
+in release.yaml file (don't touch the suffix(-d..)it will be automatically taken care by script).
+```sh
+VERSION=2.10.1-d15
+```
+
+
+## Manual Steps
 Once you are ready with your changes in charts - 
 
 Run **git tag** command from root directory

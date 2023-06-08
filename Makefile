@@ -29,6 +29,9 @@ push-chart:
 # 	helm registry logout $(ECR_HOST)
 
 
+# Run to Trigger the GitHub ACtion Pipeline
+git-push:
+	./automate-version-script.sh
 
 # dev release:
 # 	docker run --rm -it -v `pwd`:/home/build/working_dir -v ~/.gitconfig:/home/build/.gitconfig -v ~/.ssh:/home/build/.ssh rubiklabs/builder:0.4.0 dev patch DIRECTORY_OF_CHART
