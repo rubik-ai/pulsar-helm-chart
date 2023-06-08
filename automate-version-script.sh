@@ -41,7 +41,7 @@ echo "NEW TAG: $NEW_VERSION is PUSHED to GITHUB"
 echo "COMMITING CHANGES to GITHUB"
 git add $FILE_NAME
 
-git commit -m "Udated Release Verison with $NEW_VERSION"
+git commit -m "Updated Release Verison with $NEW_VERSION"
 
 git push
 echo "COMMITED CHANGES to GITHUB"
