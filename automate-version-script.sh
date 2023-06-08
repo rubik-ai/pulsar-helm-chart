@@ -6,7 +6,7 @@ VERSION=$(cat $FILE_NAME| grep "VERSION" | awk -F= '{print $2}')
 REMOVED_PREFIX=$(echo "$VERSION" | sed 's/-d[0-9][0-9]*//')
 RELEASE=$(cat $FILE_NAME | grep "RELEASE" | awk -F= '{print $2}')
 
-## Checking if any change in CHART VERSION
+## Checking if any chnage in CHART VERSION
 
 if [ $REMOVED_PREFIX == $RELEASE ]
 then
@@ -16,6 +16,9 @@ then
     echo "@@@@ INCREMENTED THE VERSION SUFFIX @@@@"
 
     NEW_VERSION="$REMOVED_PREFIX-d$INCREMENTED_VERSION_NUMBER"
+
+    echo "@@@@ UPDATING VERSION in $FILE_NAME @@@@"
+    sed -i "s/VERSION=.*/VERSION=$NEW_VERSION/" $FILE_NAME
 else
     echo "@@@@ NOTICED NEW CHART VERSION is HERE @@@@"
     NEW_VERSION="$REMOVED_PREFIX-d1"
@@ -23,9 +26,6 @@ else
     echo "@@@@ UPDATING RELEASE in $FILE_NAME @@@@"
     sed -i "s/RELEASE=.*/RELEASE=$REMOVED_PREFIX/" $FILE_NAME
 fi
-
-echo "@@@@ UPDATING VERSION in $FILE_NAME @@@@"
-sed -i "s/VERSION=.*/VERSION=$NEW_VERSION/" $FILE_NAME
 
 echo "The TAG to be pushed to git is: $NEW_VERSION"
 
