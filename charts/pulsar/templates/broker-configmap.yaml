@@ -28,7 +28,7 @@ metadata:
     component: {{ .Values.broker.component }}
 data:
   # Metadata settings
-  zookeeperServers: "{{ template "pulsar.zookeeper.connect" . }}{{ .Values.metadataPrefix }}
+  zookeeperServers: "{{ template "pulsar.zookeeper.connect" . }}{{ .Values.metadataPrefix }}"
   systemTopicEnabled: "true"
   topicLevelPoliciesEnabled: "true"
   {{- if .Values.pulsar_metadata.configurationStore }}
