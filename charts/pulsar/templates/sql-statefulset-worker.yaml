@@ -10,7 +10,7 @@ metadata:
     component: {{ .Values.sql.component }}
 spec:
   serviceName: "{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}-w"
-  replicas: {{ .Values.sql.replicworkerReplicaCountaCount }}
+  replicas: {{ .Values.sql.workerReplicaCount }}
   updateStrategy:
     type: RollingUpdate
   podManagementPolicy: Parallel
