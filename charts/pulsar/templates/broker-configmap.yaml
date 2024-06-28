@@ -97,13 +97,22 @@ data:
 
   # Function Worker Settings
   # function worker configuration
-  {{- if not .Values.components.functions }}
+  {{- if not (or .Values.components.functions .Values.extra.functionsAsPods) }}
   functionsWorkerEnabled: "false"
   {{- end }}
-  {{- if .Values.components.functions }}
+  {{- if or .Values.components.functions .Values.extra.functionsAsPods }}
   functionsWorkerEnabled: "true"
-  {{- if .Values.functions.useBookieAsStateStore }}
-  PF_stateStorageServiceUrl: "bk://{{ template "pulsar.fullname" . }}-{{ .Values.bookkeeper.component }}:{{ .Values.bookkeeper.ports.statestore }}"
+  {{- if and .Values.auth.authentication.enabled .Values.auth.authorization.enabled }}
+  PF_clientAuthenticationParameters: "file:///pulsar/tokens/broker/token"
+  PF_clientAuthenticationPlugin: "org.apache.pulsar.client.impl.auth.AuthenticationToken"
+  PF_authenticationEnabled: "true"
+  PF_superUserRoles: {{ .Values.auth.superUsersList }}
+  PF_authenticationProviders: "io.dataos.pulsar.auth.AuthenticationProviderHeimdall"
+  PF_authorizationEnabled: "true"
+  {{- if .Values.functions.heimdall }}
+{{ toYaml .Values.functions.heimdall | indent 2 }}
+  {{- end }}
+  PF_configurationMetadataStoreUrl: "{{ template "pulsar.zookeeper.connect" . }}{{ .Values.metadataPrefix }}"
   {{- end }}
   PF_functionRuntimeFactoryClassName: "org.apache.pulsar.functions.runtime.kubernetes.KubernetesRuntimeFactory"
   PF_pulsarFunctionsCluster: {{ template "pulsar.cluster.name" . }}
@@ -113,33 +122,43 @@ data:
   # support version >= 2.5.0
   PF_functionRuntimeFactoryConfigs_pulsarRootDir: {{ template "pulsar.home" . }}
   PF_kubernetesContainerFactory_pulsarRootDir: {{ template "pulsar.home" . }}
-  PF_functionRuntimeFactoryConfigs_pulsarDockerImageName: "{{ template "pulsar.imageFullName" (dict "image" .Values.images.functions "root" .) }}"
-  PF_functionRuntimeFactoryConfigs_imagePullPolicy: "{{ template "pulsar.imagePullPolicy" (dict "image" .Values.images.functions "root" .) }}"
+  PF_functionRuntimeFactoryConfigs_pulsarDockerImageName: "{{ .Values.images.functions.repository }}:{{ .Values.images.functions.tag }}"
   PF_functionRuntimeFactoryConfigs_submittingInsidePod: "true"
   PF_functionRuntimeFactoryConfigs_installUserCodeDependencies: "true"
-  PF_functionRuntimeFactoryConfigs_jobNamespace: {{ template "pulsar.namespace" . }}
+  PF_functionRuntimeFactoryConfigs_jobNamespace: {{ .Values.functions.namespace }}
+  {{- if .Values.functions.component }}
+  PF_functionRuntimeFactoryConfigs_jobName: {{ .Values.functions.component }}
+  {{- end }}
   PF_functionRuntimeFactoryConfigs_expectedMetricsCollectionInterval: "30"
-  {{- if not (and .Values.tls.enabled .Values.tls.broker.enabled .Values.tls.function_instance.enabled) }}
+  {{- if not (and .Values.tls.enabled .Values.tls.broker.enabled) }}
   PF_functionRuntimeFactoryConfigs_pulsarAdminUrl: "http://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.http }}/"
   PF_functionRuntimeFactoryConfigs_pulsarServiceUrl: "pulsar://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.pulsar }}/"
-  {{- else }}
-  PF_functionRuntimeFactoryConfigs_pulsarAdminUrl: "https://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.https }}/"
-  PF_functionRuntimeFactoryConfigs_pulsarServiceUrl: "pulsar+ssl://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.pulsarssl }}/"
   {{- end }}
+  {{- if and .Values.tls.enabled .Values.tls.broker.enabled }}
+  PF_functionRuntimeFactoryConfigs_pulsarAdminUrl: {{ .Values.functions.adminUrl }}
+  PF_functionRuntimeFactoryConfigs_pulsarServiceUrl: {{ .Values.functions.serviceUrl }}
+  {{- end }}
+  PF_functionRuntimeFactoryConfigs_changeConfigMap: "{{ template "pulsar.fullname" . }}-{{ .Values.functions.component }}-config"
+  PF_functionRuntimeFactoryConfigs_changeConfigMapNamespace: {{ template "pulsar.namespace" . }}
   # support version < 2.5.0
-  PF_kubernetesContainerFactory_pulsarDockerImageName: "{{ template "pulsar.imageFullName" (dict "image" .Values.images.functions "root" .) }}"
-  PF_kubernetesContainerFactory_imagePullPolicy: "{{ template "pulsar.imagePullPolicy" (dict "image" .Values.images.functions "root" .) }}"
+  PF_kubernetesContainerFactory_pulsarDockerImageName: "{{ .Values.images.functions.repository }}:{{ .Values.images.functions.tag }}"
   PF_kubernetesContainerFactory_submittingInsidePod: "true"
   PF_kubernetesContainerFactory_installUserCodeDependencies: "true"
-  PF_kubernetesContainerFactory_jobNamespace: {{ template "pulsar.namespace" . }}
+  PF_kubernetesContainerFactory_jobNamespace: {{ .Values.functions.namespace }}
+  {{- if .Values.functions.component }}
+  PF_kubernetesContainerFactory_jobName: {{ .Values.functions.component }}
+  {{- end }}
   PF_kubernetesContainerFactory_expectedMetricsCollectionInterval: "30"
-  {{- if not (and .Values.tls.enabled .Values.tls.broker.enabled .Values.tls.function_instance.enabled) }}
+  {{- if not (and .Values.tls.enabled .Values.tls.broker.enabled) }}
   PF_kubernetesContainerFactory_pulsarAdminUrl: "http://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.http }}/"
   PF_kubernetesContainerFactory_pulsarServiceUrl: "pulsar://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.pulsar }}/"
-  {{- else }}
-  PF_kubernetesContainerFactory_pulsarAdminUrl: "https://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.https }}/"
-  PF_kubernetesContainerFactory_pulsarServiceUrl: "pulsar+ssl://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.pulsarssl }}/"
   {{- end }}
+  {{- if and .Values.tls.enabled .Values.tls.broker.enabled }}
+  PF_kubernetesContainerFactory_pulsarAdminUrl: {{ .Values.functions.adminUrl }}
+  PF_kubernetesContainerFactory_pulsarServiceUrl:  {{ .Values.functions.serviceUrl }}
+  {{- end }}
+  PF_kubernetesContainerFactory_changeConfigMap: "{{ template "pulsar.fullname" . }}-{{ .Values.functions.component }}-config"
+  PF_kubernetesContainerFactory_changeConfigMapNamespace: {{ template "pulsar.namespace" . }}
   {{- end }}
 
   # prometheus needs to access /metrics endpoint
@@ -161,10 +180,8 @@ data:
   authenticationEnabled: "true"
   {{- if .Values.auth.authorization.enabled }}
   authorizationEnabled: "true"
-  superUserRoles: {{ .Values.auth.superUsers | values | compact | sortAlpha | join "," }}
-  {{- if .Values.auth.useProxyRoles }}
-  proxyRoles: {{ .Values.auth.superUsers.proxy }}
-  {{- end }}
+  superUserRoles: {{ .Values.auth.superUsersList }}
+  proxyRoles: {{ .Values.auth.proxyRolesList }}
   {{- end }}
   {{- if eq .Values.auth.authentication.provider "jwt" }}
   # token authentication configuration
@@ -175,6 +192,15 @@ data:
   tokenSecretKey: "file:///pulsar/keys/token/secret.key"
   {{- else }}
   tokenPublicKey: "file:///pulsar/keys/token/public.key"
+  {{- end }}
+  {{- end }}
+  {{- if eq .Values.auth.authentication.provider "heimdall" }}
+  # heimdall token authentication configuration
+  authenticationProviders: "io.dataos.pulsar.auth.AuthenticationProviderHeimdall"
+  brokerClientAuthenticationParameters: "file:///pulsar/tokens/broker/token"
+  brokerClientAuthenticationPlugin: "org.apache.pulsar.client.impl.auth.AuthenticationToken"
+  {{- if .Values.auth.heimdall }}
+{{ toYaml .Values.auth.heimdall | indent 2 }}
   {{- end }}
   {{- end }}
   {{- end }}
@@ -196,5 +222,108 @@ data:
   # https://github.com/apache/bookkeeper/pull/2300
   bookkeeperUseV2WireProtocol: "false"
   {{- end }}
+  
+  # Offload Settings
+{{- if .Values.storageOffload }}
+{{- if .Values.storageOffload.driver }}
+{{- if eq .Values.storageOffload.driver "aws-s3" }}
+  managedLedgerOffloadDriver: "{{ .Values.storageOffload.driver }}"
+  s3ManagedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
+  s3ManagedLedgerOffloadRegion: "{{ .Values.storageOffload.region }}"
+  {{- if .Values.extra.tardigrade}}
+  s3ManagedLedgerOffloadServiceEndpoint: "http://{{ .Release.Name }}-tardigrade-gateway-svc:{{ .Values.tardigrade.service.port }}"
+  AWS_ACCESS_KEY_ID: "{{ .Values.tardigrade.accessKey }}"
+  AWS_SECRET_ACCESS_KEY: "{{ .Values.tardigrade.secretKey }}"
+  {{- else }}
+  AWS_ACCESS_KEY_ID: "{{ .Values.storageOffload.accessKey }}"
+  AWS_SECRET_ACCESS_KEY: "{{ .Values.storageOffload.accessSecret }}" # pragma: allowlist secret
+  {{- if .Values.storageOffload.serviceEndpoint}}
+  s3ManagedLedgerOffloadServiceEndpoint: "{{ .Values.storageOffload.serviceEndpoint }}"
+  {{- end }}
+  {{- end }}
+  {{- if .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadAutoTriggerSizeThresholdBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadThresholdInBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadDeletionLagMs: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadDeletionLagInMillis: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  {{- end }}
+  {{- if .Values.storageOffload.maxBlockSizeInBytes }}
+  s3ManagedLedgerOffloadMaxBlockSizeInBytes: "{{ .Values.storageOffload.maxBlockSizeInBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.readBufferSizeInBytes }}
+  s3ManagedLedgerOffloadReadBufferSizeInBytes: "{{ .Values.storageOffload.readBufferSizeInBytes }}"
+  {{- end }}
+{{- end }}
+{{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+  managedLedgerOffloadDriver: "{{ .Values.storageOffload.driver }}"
+  gcsManagedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
+  gcsManagedLedgerOffloadRegion: "{{ .Values.storageOffload.region }}"
+  gcsManagedLedgerOffloadServiceAccountKeyFile: "/pulsar/gcp-service-account/{{ .Values.storageOffload.gcsServiceAccountJsonFile }}"
+  {{- if .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadAutoTriggerSizeThresholdBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadThresholdInBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadDeletionLagMs: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadDeletionLagInMillis: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  {{- end }}
+  {{- if .Values.storageOffload.maxBlockSizeInBytes }}
+  gcsManagedLedgerOffloadMaxBlockSizeInBytes: "{{ .Values.storageOffload.maxBlockSizeInBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.readBufferSizeInBytes }}
+  gcsManagedLedgerOffloadReadBufferSizeInBytes: "{{ .Values.storageOffload.readBufferSizeInBytes }}"
+  {{- end }}
+{{- end }}
+{{- if eq .Values.storageOffload.driver "azureblob" }}
+  managedLedgerOffloadDriver: "{{ .Values.storageOffload.driver }}"
+  managedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
+  PULSAR_PREFIX_managedLedgerOffloadRegion: "{{ .Values.storageOffload.region }}"
+  {{- if .Values.storageOffload.serviceEndpoint}}
+  managedLedgerOffloadServiceEndpoint: "{{ .Values.storageOffload.serviceEndpoint }}"
+  PULSAR_PREFIX_managedLedgerOffloadServiceEndpoint: "{{ .Values.storageOffload.serviceEndpoint }}"
+  {{- end }}
+  # workaround to inject it in the broker.conf (problem: gets injected also in client.conf)
+  PULSAR_PREFIX_managedLedgerOffloadBucket: "{{ .Values.storageOffload.bucket }}"
+  AZURE_STORAGE_ACCOUNT: "{{ .Values.storageOffload.storageAccount }}"
+  AZURE_STORAGE_ACCESS_KEY: "{{ .Values.storageOffload.storageAccountKey }}"
+  {{- if .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadAutoTriggerSizeThresholdBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadThresholdInBytes: "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}"
+  {{- end }}
+  {{- if .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}
+  # Pre 2.6.0 value
+  managedLedgerOffloadDeletionLagMs: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  # Post 2.6.0 value
+  PULSAR_PREFIX_managedLedgerOffloadDeletionLagInMillis: "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}"
+  {{- end }}
+  {{- if .Values.storageOffload.maxBlockSizeInBytes }}
+  managedLedgerOffloadMaxBlockSizeInBytes: "{{ .Values.storageOffload.maxBlockSizeInBytes }}"
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- if .Values.kop }}
+  PULSAR_PREFIX_messagingProtocols: kafka
+  PULSAR_PREFIX_protocolHandlerDirectory: ./protocols
+  PULSAR_PREFIX_allowAutoTopicCreationType: "{{ .Values.kop.allowAutoTopicCreationType }}"
+  PULSAR_PREFIX_kafkaProtocolMap: "{{ .Values.kop.kafkaProtocolMap }}"
+  PULSAR_PREFIX_kafkaTenant: "{{.Values.kop.kafkaTenant }}"
+  PULSAR_PREFIX_kafkaNamespace: "{{.Values.kop.kafkaNamespace }}"
+  PULSAR_PREFIX_kafkaEnableMultiTenantMetadata: "{{.Values.kop.kafkaEnableMultiTenantMetadata }}"
+  PULSAR_PREFIX_kafkaMetadataTenant: "{{.Values.kop.kafkaMetadataTenant }}"
+  PULSAR_PREFIX_kafkaMetadataNamespace: "{{.Values.kop.kafkaMetadataNamespace }}"
+{{- end }}
 {{ toYaml .Values.broker.configData | indent 2 }}
 {{- end }}

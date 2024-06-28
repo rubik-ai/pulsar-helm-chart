@@ -17,7 +17,7 @@
 # under the License.
 #
 
-{{- if .Values.components.proxy }}
+{{- if or .Values.components.proxy .Values.extra.proxy }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -28,9 +28,9 @@ metadata:
     component: {{ .Values.proxy.component }}
 data:
   clusterName: {{ template "pulsar.cluster.name" . }}
-  statusFilePath: "{{ template "pulsar.home" . }}/logs/status"
+  statusFilePath: "{{ template "pulsar.home" . }}/status"
   # prometheus needs to access /metrics endpoint
-  webServicePort: "{{ .Values.proxy.ports.containerPorts.http }}"
+  webServicePort: "{{ .Values.proxy.ports.http }}"
   {{- if or (not .Values.tls.enabled) (not .Values.tls.proxy.enabled) }}
   servicePort: "{{ .Values.proxy.ports.pulsar }}"
   brokerServiceURL: pulsar://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.pulsar }}
@@ -39,10 +39,12 @@ data:
   {{- if and .Values.tls.enabled .Values.tls.proxy.enabled }}
   tlsEnabledInProxy: "true"
   servicePortTls: "{{ .Values.proxy.ports.pulsarssl }}"
-  webServicePortTls: "{{ .Values.proxy.ports.containerPorts.https }}"
+  webServicePortTls: "{{ .Values.proxy.ports.https }}"
   tlsCertificateFilePath: "/pulsar/certs/proxy/tls.crt"
   tlsKeyFilePath: "/pulsar/certs/proxy/tls.key"
+  {{- if not .Values.certs.existing_certificate.enabled }}
   tlsTrustCertsFilePath: "/pulsar/certs/ca/ca.crt"
+  {{- end }}
   {{- if and .Values.tls.enabled .Values.tls.broker.enabled }}
   # if broker enables TLS, configure proxy to talk to broker using TLS
   brokerServiceURLTLS: pulsar+ssl://{{ template "pulsar.fullname" . }}-{{ .Values.broker.component }}:{{ .Values.broker.ports.pulsarssl }}
@@ -64,11 +66,8 @@ data:
   # disable authorization on proxy and forward authorization credentials to broker
   authorizationEnabled: "false"
   forwardAuthorizationCredentials: "true"
-  {{- if .Values.auth.useProxyRoles }}
-  superUserRoles: {{ omit .Values.auth.superUsers "proxy" | values | compact | sortAlpha | join "," }}
-  {{- else }}
-  superUserRoles: {{ .Values.auth.superUsers | values | compact | sortAlpha | join "," }}
-  {{- end }}
+  superUserRoles: {{ .Values.auth.superUsersList }}
+  proxyRoles: {{ .Values.auth.proxyRolesList }}
   {{- end }}
   {{- if eq .Values.auth.authentication.provider "jwt" }}
   # token authentication configuration
@@ -79,6 +78,15 @@ data:
   tokenSecretKey: "file:///pulsar/keys/token/secret.key"
   {{- else }}
   tokenPublicKey: "file:///pulsar/keys/token/public.key"
+  {{- end }}
+  {{- end }}
+  {{- if eq .Values.auth.authentication.provider "heimdall" }}
+  # heimdall token authentication configuration
+  authenticationProviders: "io.dataos.pulsar.auth.AuthenticationProviderHeimdall"
+  brokerClientAuthenticationParameters: "file:///pulsar/tokens/proxy/token"
+  brokerClientAuthenticationPlugin: "org.apache.pulsar.client.impl.auth.AuthenticationToken"
+  {{- if .Values.auth.heimdall }}
+{{ toYaml .Values.auth.heimdall | indent 2 }}
   {{- end }}
   {{- end }}
   {{- end }}

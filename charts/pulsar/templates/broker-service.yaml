@@ -29,7 +29,6 @@ metadata:
   annotations:
 {{ toYaml .Values.broker.service.annotations | indent 4 }}
 spec:
-  type: ClusterIP
   ports:
   # prometheus needs to access /metrics endpoint
   - name: http
@@ -44,7 +43,11 @@ spec:
   - name: "{{ .Values.tlsPrefix }}pulsarssl"
     port: {{ .Values.broker.ports.pulsarssl }}
   {{- end }}
-  clusterIP: "{{ .Values.broker.service.clusterIP }}"
+  {{- if .Values.kop }}
+  - name: kafka
+    port: {{ .Values.kop.listenerPort }}
+  {{- end }}
+  clusterIP: None
   selector:
     {{- include "pulsar.matchLabels" . | nindent 4 }}
     component: {{ .Values.broker.component }}
