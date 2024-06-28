@@ -97,10 +97,10 @@ data:
 
   # Function Worker Settings
   # function worker configuration
-  {{- if not (or .Values.components.functions .Values.extra.functionsAsPods) }}
+  {{- if not .Values.components.functions }}
   functionsWorkerEnabled: "false"
   {{- end }}
-  {{- if or .Values.components.functions .Values.extra.functionsAsPods }}
+  {{- if or .Values.components.functions }}
   functionsWorkerEnabled: "true"
   {{- if and .Values.auth.authentication.enabled .Values.auth.authorization.enabled }}
   PF_clientAuthenticationParameters: "file:///pulsar/tokens/broker/token"
