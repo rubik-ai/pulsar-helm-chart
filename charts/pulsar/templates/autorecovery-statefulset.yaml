@@ -17,7 +17,7 @@
 # under the License.
 #
 
-{{- if .Values.components.autorecovery }}
+{{- if or .Values.components.autorecovery .Values.extra.autoRecovery }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -81,7 +81,7 @@ spec:
                 operator: In
                 values:
                 - {{ .Values.autorecovery.component }}
-            topologyKey: {{ .Values.autorecovery.affinity.anti_affinity_topology_key }}
+            topologyKey: "kubernetes.io/hostname"
         {{ else }}
           {{ .Values.autorecovery.affinity.type }}:
             - weight: 100
@@ -100,7 +100,7 @@ spec:
                       operator: In
                       values:
                       - {{ .Values.autorecovery.component }}
-                topologyKey: {{ .Values.autorecovery.affinity.anti_affinity_topology_key }}
+                topologyKey: "kubernetes.io/hostname"
         {{ end }}
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.autorecovery.gracePeriod }}

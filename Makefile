@@ -1,5 +1,3 @@
-### Helm push to ECR steps
-
 CH_DIR = charts
 DIR = pulsar
 VERSION = ${TAG}
@@ -34,3 +32,13 @@ push-oci-chart:
 	@echo
 	@echo "=== logout of registry ==="
 	helm3.14.0 registry logout $(ECR_HOST)
+
+
+# Run to Trigger the GitHub Action Pipeline
+git-push:
+	./automate-version-script.sh
+
+# dev release:
+# 	docker run --rm -it -v `pwd`:/home/build/working_dir -v ~/.gitconfig:/home/build/.gitconfig -v ~/.ssh:/home/build/.ssh rubiklabs/builder:0.4.0 dev patch DIRECTORY_OF_CHART
+# public release:
+# 	docker run --rm -it -v `pwd`:/home/build/working_dir -v ~/.gitconfig:/home/build/.gitconfig -v ~/.ssh:/home/build/.ssh rubiklabs/builder:0.4.0 public patch DIRECTORY_OF_CHART

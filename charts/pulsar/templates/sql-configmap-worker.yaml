@@ -1,0 +1,36 @@
+{{- if .Values.components.sql }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}-w"
+  namespace: {{ template "pulsar.namespace" . }}
+  labels:
+    {{- include "pulsar.standardLabels" . | nindent 4 }}
+    component: {{ .Values.sql.component }}
+data:
+  node.properties: |
+    node.environment=puslarsql
+    node.data-dir=/etc/data
+  worker.properties: |
+    coordinator=false
+    http-server.http.port=8080
+    query.max-memory=50GB
+    query.max-memory-per-node=1GB
+    discovery.uri=http://{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}:{{ .Values.sql.ports.http }}
+  jvm.config: |
+    -server
+    -Xmx16G
+    -XX:+UseG1GC
+    -XX:G1HeapRegionSize=32M
+    -XX:+UseGCOverheadLimit
+    -XX:+ExplicitGCInvokesConcurrent
+    -XX:+HeapDumpOnOutOfMemoryError
+    -XX:+ExitOnOutOfMemoryError
+    -Dpresto-temporarily-allow-java8=true
+    -Djdk.attach.allowAttachSelf=true
+  log.properties: |
+    io.prestosql=INFO
+    com.sun.jersey.guice.spi.container.GuiceComponentProviderFactory=WARN
+    com.ning.http.client=WARN
+    io.prestosql.server.PluginManager=DEBUG
+{{- end }}

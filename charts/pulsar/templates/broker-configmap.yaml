@@ -29,6 +29,8 @@ metadata:
 data:
   # Metadata settings
   zookeeperServers: "{{ template "pulsar.zookeeper.connect" . }}{{ .Values.metadataPrefix }}"
+  systemTopicEnabled: "true"
+  topicLevelPoliciesEnabled: "true"
   {{- if .Values.pulsar_metadata.configurationStore }}
   configurationStoreServers: "{{ template "pulsar.configurationStore.connect" . }}{{ .Values.pulsar_metadata.configurationStoreMetadataPrefix }}"
   {{- end }}
@@ -41,66 +43,14 @@ data:
   exposeTopicLevelMetricsInPrometheus: "true"
   numHttpServerThreads: "8"
   zooKeeperSessionTimeoutMillis: "30000"
-  statusFilePath: "{{ template "pulsar.home" . }}/logs/status"
-
-  # Tiered storage settings
-  {{- if .Values.broker.storageOffload.driver }}
-  {{- if eq .Values.broker.storageOffload.driver "aws-s3" }}
-  managedLedgerOffloadDriver: "{{ .Values.broker.storageOffload.driver }}" 
-  s3ManagedLedgerOffloadBucket: "{{ .Values.broker.storageOffload.bucket }}" 
-  s3ManagedLedgerOffloadRegion: "{{ .Values.broker.storageOffload.region }}" 
-  {{- if .Values.broker.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
-  PULSAR_PREFIX_managedLedgerOffloadThresholdInBytes: "{{ .Values.broker.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}" 
-  {{- end }} 
-  {{- if .Values.broker.storageOffload.managedLedgerOffloadDeletionLagMs }}
-  PULSAR_PREFIX_managedLedgerOffloadDeletionLagInMillis: "{{ .Values.broker.storageOffload.managedLedgerOffloadDeletionLagMs }}" 
-  {{- end }}
-  {{- if .Values.broker.storageOffload.maxBlockSizeInBytes }}
-  s3ManagedLedgerOffloadMaxBlockSizeInBytes: "{{ .Values.broker.storageOffload.maxBlockSizeInBytes }}" 
-  {{- end }}
-  {{- if .Values.broker.storageOffload.readBufferSizeInBytes }}
-  s3ManagedLedgerOffloadReadBufferSizeInBytes: "{{ .Values.broker.storageOffload.readBufferSizeInBytes }}" 
-  {{- end }}
-  {{- end }}
-  {{- if eq .Values.broker.storageOffload.driver "google-cloud-storage" }}
-  managedLedgerOffloadDriver: "{{ .Values.broker.storageOffload.driver }}" 
-  gcsManagedLedgerOffloadBucket: "{{ .Values.broker.storageOffload.bucket }}"
-  gcsManagedLedgerOffloadRegion: "{{ .Values.broker.storageOffload.region }}"
-  gcsManagedLedgerOffloadServiceAccountKeyFile: "/pulsar/gcp-service-account/{{ .Values.broker.storageOffload.gcsServiceAccountJsonFile }}"
-  {{- if .Values.broker.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
-  PULSAR_PREFIX_managedLedgerOffloadThresholdInBytes: "{{ .Values.broker.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}" 
-  {{- end }} 
-  {{- if .Values.broker.storageOffload.managedLedgerOffloadDeletionLagMs }}
-  PULSAR_PREFIX_managedLedgerOffloadDeletionLagInMillis: "{{ .Values.broker.storageOffload.managedLedgerOffloadDeletionLagMs }}" 
-  {{- end }}
-  {{- if .Values.broker.storageOffload.maxBlockSizeInBytes }}
-  gcsManagedLedgerOffloadMaxBlockSizeInBytes: "{{ .Values.broker.storageOffload.maxBlockSizeInBytes }}" 
-  {{- end }}
-  {{- if .Values.broker.storageOffload.readBufferSizeInBytes }}
-  gcsManagedLedgerOffloadReadBufferSizeInBytes: "{{ .Values.broker.storageOffload.readBufferSizeInBytes }}" 
-  {{- end }}
-  {{- end }}
-  {{- if eq .Values.broker.storageOffload.driver "azureblob" }}
-  managedLedgerOffloadDriver: "{{ .Values.broker.storageOffload.driver }}" 
-  managedLedgerOffloadBucket: "{{ .Values.broker.storageOffload.bucket }}"
-  {{- if .Values.broker.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
-  PULSAR_PREFIX_managedLedgerOffloadThresholdInBytes: "{{ .Values.broker.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}" 
-  {{- end }} 
-  {{- if .Values.broker.storageOffload.managedLedgerOffloadDeletionLagMs }}
-  PULSAR_PREFIX_managedLedgerOffloadDeletionLagInMillis: "{{ .Values.broker.storageOffload.managedLedgerOffloadDeletionLagMs }}" 
-  {{- end }}
-  {{- if .Values.broker.storageOffload.maxBlockSizeInBytes }}
-  managedLedgerOffloadMaxBlockSizeInBytes: "{{ .Values.broker.storageOffload.maxBlockSizeInBytes }}" 
-  {{- end }}
-  {{- end }}
-  {{- end }}
+  statusFilePath: "{{ template "pulsar.home" . }}/status"
 
   # Function Worker Settings
   # function worker configuration
-  {{- if not .Values.components.functions }}
+  {{- if not (or .Values.components.functions .Values.extra.functionsAsPods) }}
   functionsWorkerEnabled: "false"
   {{- end }}
-  {{- if or .Values.components.functions }}
+  {{- if or .Values.components.functions .Values.extra.functionsAsPods }}
   functionsWorkerEnabled: "true"
   {{- if and .Values.auth.authentication.enabled .Values.auth.authorization.enabled }}
   PF_clientAuthenticationParameters: "file:///pulsar/tokens/broker/token"

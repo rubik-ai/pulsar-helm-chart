@@ -1,0 +1,19 @@
+{{- if and .Values.components.proxy .Values.proxy.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    component: {{ .Values.proxy.component }}
+  name: {{ template "pulsar.fullname" . }}-{{ .Values.proxy.component  }}
+spec:
+  {{- if .Values.proxy.serviceMonitor.endpoints }}
+  endpoints:
+{{ toYaml .Values.proxy.serviceMonitor.endpoints | indent 2 }}
+  {{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      component: {{ .Values.proxy.component }}
+{{- end }}

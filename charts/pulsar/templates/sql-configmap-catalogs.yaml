@@ -1,0 +1,162 @@
+{{- if .Values.components.sql }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}-catalogs"
+  namespace: {{ template "pulsar.namespace" . }}
+  labels:
+    {{- include "pulsar.standardLabels" . | nindent 4 }}
+    component: {{ .Values.sql.component }}
+data:
+  pulsar.properties: |
+    # name of the connector to be displayed in the catalog
+    connector.name=pulsar
+    # the url of Pulsar broker web service
+    {{- if or (not .Values.tls.enabled) (not .Values.tls.proxy.enabled) }}
+    pulsar.web-service-url=http://{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}.{{ template "pulsar.namespace" . }}.svc.cluster.local:{{ .Values.proxy.ports.http }}
+    {{- end }}
+    {{- if and .Values.tls.enabled .Values.tls.proxy.enabled }}
+    pulsar.web-service-url=https://{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}.{{ template "pulsar.namespace" . }}:{{ .Values.proxy.ports.https }}
+    {{- end }}
+    # URI of Zookeeper cluster
+    pulsar.zookeeper-uri={{ template "pulsar.zookeeper.connect" . }}
+    # minimum number of entries to read at a single time
+    pulsar.max-entry-read-batch-size=100
+    # default number of splits to use per query
+    pulsar.target-num-splits=2
+    # max message queue size
+    pulsar.max-split-message-queue-size=10000
+    # max entry queue size
+    pulsar.max-split-entry-queue-size=1000
+    # half of this value is used as max entry queue size bytes and the left is used as max message queue size bytes,
+    # the queue size bytes shouldn't exceed this value, but it's not strict, the default value -1 indicate no limit.
+    pulsar.max-split-queue-cache-size=-1
+    # Rewrite namespace delimiter
+    # Warn: avoid using symbols allowed by Namespace (a-zA-Z_0-9 -=:%)
+    # to prevent erroneous rewriting
+    pulsar.namespace-delimiter-rewrite-enable=false
+    pulsar.rewrite-namespace-delimiter=/
+
+
+    ####### TIERED STORAGE OFFLOADER CONFIGS #######
+    {{- if .Values.storageOffload }}
+    {{- if .Values.storageOffload.driver }}
+    pulsar.managed-ledger-offload-driver={{ .Values.storageOffload.driver }}
+    pulsar.managed-ledger-offload-max-threads=2
+    pulsar.offloaders-directory = /pulsar/offloaders
+    {{- if eq .Values.storageOffload.driver "aws-s3" }}
+    pulsar.offloader-properties= \
+      {"s3ManagedLedgerOffloadBucket": "{{ .Values.storageOffload.bucket }}", \
+      {{- if .Values.storageOffload.serviceEndpoint}}
+      "s3ManagedLedgerOffloadServiceEndpoint": "{{ .Values.storageOffload.serviceEndpoint }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
+      "managedLedgerOffloadThresholdInBytes": "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}
+      "managedLedgerOffloadDeletionLagInMillis": "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.maxBlockSizeInBytes }}
+      "s3ManagedLedgerOffloadMaxBlockSizeInBytes": "{{ .Values.storageOffload.maxBlockSizeInBytes }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.readBufferSizeInBytes }}
+      "s3ManagedLedgerOffloadReadBufferSizeInBytes": "{{ .Values.storageOffload.readBufferSizeInBytes }}", \
+      {{- end }}
+      "s3ManagedLedgerOffloadRegion": "{{ .Values.storageOffload.region }}"}
+    {{- end }}
+    {{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+    pulsar.offloader-properties= \
+      {"gcsManagedLedgerOffloadBucket": "{{ .Values.storageOffload.bucket }}", \
+      "gcsManagedLedgerOffloadServiceAccountKeyFile": "/pulsar/gcp-service-account/{{ .Values.storageOffload.gcsServiceAccountJsonFile }}", \
+      {{- if .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
+      "managedLedgerOffloadThresholdInBytes": "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}
+      "managedLedgerOffloadDeletionLagInMillis": "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.maxBlockSizeInBytes }}
+      "gcsManagedLedgerOffloadMaxBlockSizeInBytes": "{{ .Values.storageOffload.maxBlockSizeInBytes }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.readBufferSizeInBytes }}
+      "gcsManagedLedgerOffloadReadBufferSizeInBytes": "{{ .Values.storageOffload.readBufferSizeInBytes }}", \
+      {{- end }}
+      "gcsManagedLedgerOffloadRegion": "{{ .Values.storageOffload.region }}"}
+    {{- end }}
+    {{- if eq .Values.storageOffload.driver "azureblob" }}
+    pulsar.offloader-properties= \
+      {"managedLedgerOffloadBucket": "{{ .Values.storageOffload.bucket }}", \
+      {{- if .Values.storageOffload.serviceEndpoint}}
+      "managedLedgerOffloadServiceEndpoint": "{{ .Values.storageOffload.serviceEndpoint }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}
+      "managedLedgerOffloadThresholdInBytes": "{{ .Values.storageOffload.managedLedgerOffloadAutoTriggerSizeThresholdBytes }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}
+      "managedLedgerOffloadDeletionLagInMillis": "{{ .Values.storageOffload.managedLedgerOffloadDeletionLagMs }}", \
+      {{- end }}
+      {{- if .Values.storageOffload.maxBlockSizeInBytes }}
+      "managedLedgerOffloadMaxBlockSizeInBytes": "{{ .Values.storageOffload.maxBlockSizeInBytes }}", \
+      {{- end }}
+      "managedLedgerOffloadRegion": "{{ .Values.storageOffload.region }}"}
+    {{- end }}
+    {{- end }}
+    {{- end }}
+
+    ####### AUTHENTICATION CONFIGS #######
+
+    ## the authentication plugin to be used to authenticate to Pulsar cluster
+    pulsar.auth-plugin={{ .Values.sql.auth.plugin }}
+
+    ## the authentication parameter to be used to authenticate to Pulsar cluster
+    pulsar.auth-params={{ .Values.sql.auth.params }}
+
+    ## Accept untrusted TLS certificate
+    pulsar.tls-allow-insecure-connection={{ .Values.sql.tls.allowInsecureConnection }}
+
+    ## Whether to enable hostname verification on TLS connections
+    pulsar.tls-hostname-verification-enable={{ .Values.sql.tls.hostnameVerification }}
+
+    ## Path for the trusted TLS certificate file
+    {{- if .Values.sql.tls.trustCertFilePath }}
+    pulsar.tls-trust-cert-file-path={{ .Values.sql.tls.trustCertFilePath }}
+    {{- end }}
+
+    ####### BOOKKEEPER CONFIGS #######
+
+    # Entries read count throttling-limit per seconds, 0 is represents disable the throttle, default is 0.
+    pulsar.bookkeeper-throttle-value = 0
+
+    # The number of threads used by Netty to handle TCP connections,
+    # default is 2 * Runtime.getRuntime().availableProcessors().
+    # pulsar.bookkeeper-num-io-threads =
+
+    # The number of worker threads used by bookkeeper client to submit operations,
+    # default is Runtime.getRuntime().availableProcessors().
+    # pulsar.bookkeeper-num-worker-threads =
+
+    # Whether the bookkeeper client use v2 protocol or v3 protocol.
+    # Default is the v2 protocol which the LAC is piggy back lac. Otherwise the client
+    # will use v3 protocol and use explicit lac.
+    pulsar.bookkeeper-use-v2-protocol=true
+    pulsar.bookkeeper-explicit-interval=0
+
+    ####### MANAGED LEDGER CONFIGS #######
+
+    # Amount of memory to use for caching data payload in managed ledger. This memory
+    # is allocated from JVM direct memory and it's shared across all the managed ledgers
+    # running in same sql worker. 0 is represents disable the cache, default is 0.
+    pulsar.managed-ledger-cache-size-MB = 0
+
+    # Number of threads to be used for managed ledger tasks dispatching,
+    # default is Runtime.getRuntime().availableProcessors().
+    # pulsar.managed-ledger-num-worker-threads =
+
+    # Number of threads to be used for managed ledger scheduled tasks,
+    # default is Runtime.getRuntime().availableProcessors().
+    # pulsar.managed-ledger-num-scheduler-threads =
+
+    ####### PROMETHEUS CONFIGS #######
+
+    # pulsar.stats-provider=org.apache.bookkeeper.stats.prometheus.PrometheusMetricsProvider
+    # pulsar.stats-provider-configs={"httpServerEnabled":"false", "prometheusStatsHttpPort":"9092", "prometheusStatsHttpEnable":"true"}
+{{- end }}

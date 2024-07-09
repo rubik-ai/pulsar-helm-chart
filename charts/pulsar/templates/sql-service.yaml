@@ -1,0 +1,28 @@
+{{- if .Values.components.sql }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}"
+  namespace: {{ template "pulsar.namespace" . }}
+  labels:
+    {{- include "pulsar.standardLabels" . | nindent 4 }}
+    component: {{ .Values.sql.component }}
+  annotations:
+  {{- with .Values.sql.service.annotations }}
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ports:
+    - name: http
+      port: {{ .Values.sql.ports.http }}
+      protocol: TCP
+    {{- if and .Values.tls.enabled .Values.tls.sql.enabled }}
+    - name: https
+      port: {{ .Values.sql.ports.https }}
+      protocol: TCP
+    {{- end }}
+  selector:
+    app: {{ template "pulsar.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.sql.component }}
+{{- end }}

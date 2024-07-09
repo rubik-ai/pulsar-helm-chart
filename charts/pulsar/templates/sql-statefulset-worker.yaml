@@ -1,0 +1,149 @@
+
+{{- if .Values.components.sql }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: "{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}-w"
+  namespace: {{ template "pulsar.namespace" . }}
+  labels:
+    {{- include "pulsar.standardLabels" . | nindent 4 }}
+    component: {{ .Values.sql.component }}
+spec:
+  serviceName: "{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}-w"
+  replicas: {{ .Values.sql.workerReplicaCount }}
+  updateStrategy:
+    type: RollingUpdate
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      {{- include "pulsar.matchLabels" . | nindent 6 }}
+      component: {{ .Values.sql.component }}-w
+  template:
+    metadata:
+      labels:
+        {{- include "pulsar.template.labels" . | nindent 8 }}
+        component: {{ .Values.sql.component }}-w
+      annotations:
+{{ toYaml .Values.sql.annotations | indent 8 }}
+    spec:
+    {{- if .Values.sql.nodeSelector }}
+      nodeSelector:
+{{ toYaml .Values.sql.nodeSelector | indent 8 }}
+    {{- end }}
+    {{- if .Values.sql.tolerations }}
+      tolerations:
+{{ toYaml .Values.sql.tolerations | indent 8 }}
+    {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.sql.gracePeriod }}
+    {{- if and .Values.rbac.enabled .Values.rbac.psp }}
+      serviceAccountName: "{{ template "pulsar.fullname" . }}-{{ .Values.proxy.component }}"
+    {{- end}}
+      containers:
+      - name: "{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}-w"
+        image: "{{ .Values.images.broker.repository }}:{{ .Values.images.broker.tag }}"
+        imagePullPolicy: {{ .Values.images.broker.pullPolicy }}
+      {{- if .Values.sql.resources }}
+        resources:
+{{ toYaml .Values.sql.resources | indent 10 }}
+      {{- end }}
+        command: ["sh", "-c"]
+        args:
+        - >
+          echo "OK" > status;
+          exec bin/pulsar sql-worker run --config /etc/sql/worker.properties --etc-dir /etc/sql --data-dir /etc/data;
+        ports:
+        - name: http
+          containerPort: {{ .Values.sql.ports.http }}
+        {{- if and .Values.tls.enabled .Values.tls.sql.enabled }}
+        - name: https
+          containerPort: {{ .Values.sql.ports.https }}
+        {{- end }}
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        {{- if .Values.storageOffload }}
+        {{- if .Values.storageOffload.driver }}
+        {{- if eq .Values.storageOffload.driver "aws-s3" }}
+        - name: AWS_ACCESS_KEY_ID
+          value: "{{ .Values.storageOffload.accessKey }}"
+        - name: AWS_SECRET_ACCESS_KEY
+          value: "{{ .Values.storageOffload.accessSecret }}"
+        {{- end}}
+        {{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+        {{- end}}
+        {{- if eq .Values.storageOffload.driver "azureblob" }}
+        - name: AZURE_STORAGE_ACCOUNT
+          value: "{{ .Values.storageOffload.storageAccount }}"
+        - name: AZURE_STORAGE_ACCESS_KEY
+          value: "{{ .Values.storageOffload.storageAccountKey }}"
+        {{- end}}
+        {{- end}}
+        {{- end}}
+        volumeMounts:
+        - mountPath: "/etc/data"
+          name: data
+          readOnly: false
+        - mountPath: "/etc/sql"
+          name: config
+          readOnly: true
+        - mountPath: "/etc/sql/catalog"
+          name: catalogs
+          readOnly: true
+        {{- if .Values.tls.enabled }}
+        - mountPath: "/pulsar/certs/ca"
+          name: ca
+          readOnly: true
+        {{- end}}
+        {{- if .Values.storageOffload }}
+        {{- if .Values.storageOffload.driver }}
+        {{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+        - name: gcp-service-account
+          readOnly: true
+          mountPath: /pulsar/gcp-service-account
+        {{- end }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.sql.extraVolumeMounts }}
+{{ toYaml .Values.sql.extraVolumeMounts | indent 8 }}
+        {{- end }}
+      volumes:
+      - name: data
+        emptyDir: {}
+      - name: config
+        configMap:
+          name: "{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}-w"
+      - name: catalogs
+        configMap:
+          name: "{{ template "pulsar.fullname" . }}-{{ .Values.sql.component }}-catalogs"
+      {{- if .Values.certs.existing_issuer.enabled }}
+      - name: ca
+        secret:
+          secretName: "{{ .Values.certs.existing_issuer.secretName }}"
+          items:
+          - key: ca.crt
+            path: ca.crt
+      {{- end }}
+      {{- if .Values.certs.internal_issuer.enabled }}
+      - name: ca
+        secret:
+          secretName: "{{ .Release.Name }}-{{ .Values.tls.ca_suffix }}"
+          items:
+          - key: ca.crt
+            path: ca.crt
+      {{- end }}
+      {{- if .Values.storageOffload }}
+      {{- if .Values.storageOffload.driver }}
+      {{- if eq .Values.storageOffload.driver "google-cloud-storage" }}
+      - name: gcp-service-account
+        secret:
+          secretName: {{ .Values.storageOffload.gcsServiceAccountSecret }}
+      {{- end }}
+      {{- end }}
+      {{- end }}
+      {{- if .Values.sql.extraVolumes }}
+{{ toYaml .Values.sql.extraVolumes | indent 6 }}
+      {{- end }}
+      {{- include "pulsar.imagePullSecrets" . | nindent 6}}
+{{- end }}

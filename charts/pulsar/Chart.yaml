@@ -18,15 +18,14 @@
 #
 
 apiVersion: v2
-appVersion: "3.0.5"
+appVersion: "2.10.1"
 description: Apache Pulsar Helm chart for Kubernetes
 name: pulsar
-version: 3.5.0
+version: 2.10.1
 home: https://pulsar.apache.org
 sources:
-  - https://github.com/apache/pulsar
-  - https://github.com/apache/pulsar-helm-chart
+- https://github.com/apache/pulsar
 icon: https://pulsar.apache.org/img/pulsar.svg
 maintainers:
-  - name: The Apache Pulsar Team
-    email: dev@pulsar.apache.org
+- name: The Apache Pulsar Team
+  email: dev@pulsar.apache.org

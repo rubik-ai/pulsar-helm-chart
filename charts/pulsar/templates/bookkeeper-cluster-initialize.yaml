@@ -49,8 +49,7 @@ spec:
         args:
           - >-
             {{- if $zk:=.Values.pulsar_metadata.userProvidedZookeepers }}
-            export PULSAR_MEM="-Xmx128M";
-            until timeout 15 bin/pulsar zookeeper-shell -server {{ $zk }} ls {{ or .Values.metadataPrefix "/" }}; do
+            until bin/pulsar zookeeper-shell -server {{ $zk }} ls {{ or .Values.metadataPrefix "/" }}; do
               echo "user provided zookeepers {{ $zk }} are unreachable... check in 3 seconds ..." && sleep 3;
             done;
             {{ else }}
@@ -71,12 +70,11 @@ spec:
           - >
             bin/apply-config-from-env.py conf/bookkeeper.conf;
             {{- include "pulsar.toolset.zookeeper.tls.settings" . | nindent 12 }}
-            export BOOKIE_MEM="-Xmx128M";
-            if timeout 15 bin/bookkeeper shell whatisinstanceid; then
+            if bin/bookkeeper shell whatisinstanceid; then
                 echo "bookkeeper cluster already initialized";
             else
                 {{- if not (eq .Values.metadataPrefix "") }}
-                bin/pulsar zookeeper-shell -server {{ template "pulsar.fullname" . }}-{{ .Values.zookeeper.component }} create {{ .Values.metadataPrefix }} && echo 'created for pulsar cluster "{{ template "pulsar.cluster.name" . }}"' &&
+                bin/bookkeeper org.apache.zookeeper.ZooKeeperMain -server {{ template "pulsar.fullname" . }}-{{ .Values.zookeeper.component }} create {{ .Values.metadataPrefix }} 'created for pulsar cluster "{{ template "pulsar.cluster.name" . }}"' || yes &&
                 {{- end }}
                 bin/bookkeeper shell initnewcluster;
             fi

@@ -1,0 +1,20 @@
+{{- if .Values.components.pulsar_heartbeat }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ template "pulsar.fullname" . }}-{{ .Values.pulsar_heartbeat.component }}"
+  namespace: {{ template "pulsar.namespace" . }}
+  labels:
+    {{- include "pulsar.standardLabels" . | nindent 4 }}
+    component: {{ .Values.pulsar_heartbeat.component }}
+spec:
+  type: {{ .Values.pulsar_heartbeat.serviceType }}
+  ports:
+    - name: http
+      port: {{ .Values.pulsar_heartbeat.port | default 8089 }}
+      protocol: TCP
+  selector:
+    app: {{ template "pulsar.name" . }}
+    release: {{ .Release.Name }}
+    component: {{ .Values.pulsar_heartbeat.component }}
+{{- end }}

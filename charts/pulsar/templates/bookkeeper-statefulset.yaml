@@ -78,7 +78,7 @@ spec:
                 operator: In
                 values:
                 - {{ .Values.bookkeeper.component }}
-            topologyKey: {{ .Values.bookkeeper.affinity.anti_affinity_topology_key }}
+            topologyKey: "kubernetes.io/hostname"
         {{ else }}
           {{ .Values.bookkeeper.affinity.type }}:
             - weight: 100
@@ -97,7 +97,7 @@ spec:
                       operator: In
                       values:
                       - {{ .Values.bookkeeper.component }}
-                topologyKey: {{ .Values.bookkeeper.affinity.anti_affinity_topology_key }}
+                topologyKey: "kubernetes.io/hostname"
         {{ end }}
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.bookkeeper.gracePeriod }}
@@ -189,8 +189,8 @@ spec:
             name: "{{ template "pulsar.fullname" . }}-{{ .Values.bookkeeper.component }}"
         volumeMounts:
         {{- if .Values.bookkeeper.volumes.useSingleCommonVolume }}
-        - name: "{{ template "pulsar.fullname" . }}-{{ .Values.bookkeeper.component }}-{{ .Values.bookkeeper.volumes.common.name }}"
-          mountPath: /pulsar/data/bookkeeper
+          - name: "{{ template "pulsar.fullname" . }}-{{ .Values.bookkeeper.component }}-{{ .Values.bookkeeper.volumes.common.name }}"
+            mountPath: /pulsar/data/bookkeeper
         {{- else }}
           {{- if .Values.bookkeeper.volumes.journal.useMultiVolumes }}
             {{- $fullname := include "pulsar.fullname" . -}}

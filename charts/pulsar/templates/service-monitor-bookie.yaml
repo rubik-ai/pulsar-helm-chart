@@ -1,0 +1,38 @@
+{{- if and .Values.components.bookkeeper .Values.bookkeeper.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    component: {{ .Values.bookkeeper.component }}
+  name: {{ template "pulsar.fullname" . }}-{{ .Values.bookkeeper.component }}
+spec:
+  endpoints:
+  {{- with .Values.bookkeeper.serviceMonitor }}
+  - interval: {{ .interval }}
+    scrapeTimeout: {{ .scrapeTimeout }}
+    {{- if .https.enabled }}
+    port: {{ .https.port }}
+    scheme: {{ .https.scheme }}
+    tlsConfig:
+      insecureSkipVerify: true
+      {{- if .https.certs.enabled }}
+      caFile: {{ .https.certs.caFile }}
+      keyFile: {{ .https.certs.keyFile }}
+      certFile: {{ .https.certs.certFile }}
+      {{- end }}
+    {{- else }}
+    port: {{ .port }}
+    {{- end }}
+    {{- if .authorization.enabled }}
+    bearerTokenSecret:
+      name: {{ .authorization.secretName }}
+      key: {{ .authorization.secretKeyName }}
+    {{- end }}
+  {{- end }}    
+  namespaceSelector:
+    matchNames:
+    - {{ .Release.Namespace }}
+  selector:
+    matchLabels:
+      component: {{ .Values.bookkeeper.component }}
+{{- end }}
