@@ -129,7 +129,7 @@ data:
   {{- if .Values.auth.authentication.enabled }}
   authenticationEnabled: "true"
   {{- if .Values.auth.authorization.enabled }}
-  authorizationEnabled: "false"
+  authorizationEnabled: "true"
   superUserRoles: {{ .Values.auth.superUsers.broker }},{{ .Values.auth.superUsers.proxy }},{{ .Values.auth.superUsers.client }}
   {{- if .Values.auth.useProxyRoles }}
   proxyRoles: {{ .Values.auth.superUsers.proxy }}
