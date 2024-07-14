@@ -71,7 +71,6 @@ data:
   {{- else }}
   superUserRoles: {{ .Values.auth.superUsers.broker }},{{ .Values.auth.superUsers.proxy }},{{ .Values.auth.superUsers.client }}
   {{- end }}
-  {{- end }}
   {{- if eq .Values.auth.authentication.provider "jwt" }}
   # token authentication configuration
   authenticationProviders: "org.apache.pulsar.broker.authentication.AuthenticationProviderToken"
