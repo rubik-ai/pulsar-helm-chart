@@ -146,7 +146,6 @@ data:
   tokenPublicKey: "file:///pulsar/keys/token/public.key"
   {{- end }}
   {{- end }}
-  {{- end }}
   {{- if eq .Values.auth.authentication.provider "heimdall" }}
   # heimdall token authentication configuration
   authenticationProviders: "io.dataos.pulsar.auth.AuthenticationProviderHeimdall"
