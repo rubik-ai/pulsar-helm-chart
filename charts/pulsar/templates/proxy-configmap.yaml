@@ -62,7 +62,6 @@ data:
   # Authentication Settings
   {{- if .Values.auth.authentication.enabled }}
   authenticationEnabled: "true"
-  {{- end }}
   {{- if .Values.auth.authorization.enabled }}
   # disable authorization on proxy and forward authorization credentials to broker
   authorizationEnabled: "false"
@@ -71,6 +70,7 @@ data:
   superUserRoles: {{ .Values.auth.superUsers.broker }},{{ .Values.auth.superUsers.client }}
   {{- else }}
   superUserRoles: {{ .Values.auth.superUsers.broker }},{{ .Values.auth.superUsers.proxy }},{{ .Values.auth.superUsers.client }}
+  {{- end }}
   {{- end }}
   {{- if eq .Values.auth.authentication.provider "jwt" }}
   # token authentication configuration
@@ -81,6 +81,7 @@ data:
   tokenSecretKey: "file:///pulsar/keys/token/secret.key"
   {{- else }}
   tokenPublicKey: "file:///pulsar/keys/token/public.key"
+  {{- end }}
   {{- end }}
   {{- end }}
   {{- if eq .Values.auth.authentication.provider "heimdall" }}
