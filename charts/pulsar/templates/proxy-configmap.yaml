@@ -62,20 +62,15 @@ data:
   # Authentication Settings
   {{- if .Values.auth.authentication.enabled }}
   authenticationEnabled: "true"
+  {{- end }}
   {{- if .Values.auth.authorization.enabled }}
   # disable authorization on proxy and forward authorization credentials to broker
   authorizationEnabled: "false"
   forwardAuthorizationCredentials: "true"
-  forwardAuthorizationCredentials: "true"
   {{- if .Values.auth.useProxyRoles }}
-  superUserRoles: {{- range $index, $element := .Values.auth.superUsers }}
-    {{- if ne $element "proxy" }}
-      {{- if $index }},{{- end }}{{ $element }}
-    {{- end }}
-  {{- end }}
+  superUserRoles: {{ .Values.auth.superUsers.broker }},{{ .Values.auth.superUsers.client }}
   {{- else }}
-  superUserRoles: {{ .Values.auth.superUsers | values | compact | sortAlpha | join "," }}
-  {{- end }}
+  superUserRoles: {{ .Values.auth.superUsers.broker }},{{ .Values.auth.superUsers.proxy }},{{ .Values.auth.superUsers.client }}
   {{- end }}
   {{- if eq .Values.auth.authentication.provider "jwt" }}
   # token authentication configuration

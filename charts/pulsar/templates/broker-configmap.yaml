@@ -128,13 +128,10 @@ data:
   # Authentication Settings
   {{- if .Values.auth.authentication.enabled }}
   authenticationEnabled: "true"
+  {{- end }}
   {{- if .Values.auth.authorization.enabled }}
   authorizationEnabled: "true"
-  superUserRoles: {{- range $index, $element := .Values.auth.superUsers }}
-    {{- if ne $element "proxy" }}
-      {{- if $index }},{{- end }}{{ $element }}
-    {{- end }}
-  {{- end }}
+  superUserRoles: {{ .Values.auth.superUsers.broker }},{{ .Values.auth.superUsers.proxy }},{{ .Values.auth.superUsers.client }}
   {{- if .Values.auth.useProxyRoles }}
   proxyRoles: {{ .Values.auth.superUsers.proxy }}
   {{- end }}
