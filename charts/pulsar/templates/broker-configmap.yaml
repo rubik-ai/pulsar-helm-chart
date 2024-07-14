@@ -131,7 +131,7 @@ data:
   {{- if .Values.auth.authorization.enabled }}
   authorizationEnabled: "true"
   superUserRoles: {{ .Values.auth.superUsersList }}
-  proxyRoles: {{ .Values.auth.proxyRolesList }}
+  proxyRoles: {{ .Values.auth.superUsers.proxy }}
   {{- end }}
   {{- if eq .Values.auth.authentication.provider "jwt" }}
   # token authentication configuration
